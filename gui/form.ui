@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>774</height>
+    <height>787</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>LINUM Microscopes - GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -37,23 +37,30 @@
            <string>Position</string>
           </property>
           <layout class="QGridLayout" name="gridLayout">
+           <item row="1" column="1">
+            <widget class="QLCDNumber" name="lcdNumber_2"/>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLCDNumber" name="lcdNumber_5"/>
+           </item>
+           <item row="5" column="0">
+            <widget class="QCheckBox" name="checkBox">
+             <property name="text">
+              <string>Link top / bottom</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>BottomRot (deg)</string>
+             </property>
+            </widget>
+           </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_2">
              <property name="text">
               <string>Y (mm)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QLineEdit" name="lineEdit_5"/>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEdit"/>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>X (mm)</string>
              </property>
             </widget>
            </item>
@@ -64,33 +71,45 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="lineEdit_3"/>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="lineEdit_2"/>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="lineEdit_4"/>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>BottomRot (deg)</string>
+           <item row="0" column="1">
+            <widget class="QLCDNumber" name="lcdNumber">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::Box</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <property name="smallDecimalPoint">
+              <bool>false</bool>
+             </property>
+             <property name="segmentStyle">
+              <enum>QLCDNumber::Filled</enum>
+             </property>
+             <property name="value" stdset="0">
+              <double>0.000000000000000</double>
              </property>
             </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>X (mm)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLCDNumber" name="lcdNumber_3"/>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLCDNumber" name="lcdNumber_4"/>
            </item>
            <item row="3" column="0">
             <widget class="QLabel" name="label_4">
              <property name="text">
               <string>TopRot (deg)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QCheckBox" name="checkBox">
-             <property name="text">
-              <string>Link top / bottom</string>
              </property>
             </widget>
            </item>
@@ -114,16 +133,22 @@
             </widget>
            </item>
            <item row="0" column="0">
-            <widget class="QPushButton" name="pushButton_8">
+            <widget class="QPushButton" name="pushButton_pliRot_topJogReverse">
              <property name="text">
-              <string>-Rot</string>
+              <string>θ</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-previous"/>
              </property>
             </widget>
            </item>
            <item row="0" column="2">
-            <widget class="QPushButton" name="pushButton_7">
+            <widget class="QPushButton" name="pushButton_pliRot_topJog">
              <property name="text">
-              <string>+Rot</string>
+              <string>θ</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-next"/>
              </property>
             </widget>
            </item>
@@ -146,6 +171,13 @@
              </property>
             </widget>
            </item>
+           <item row="0" column="0">
+            <widget class="QPushButton" name="pushButton_">
+             <property name="text">
+              <string>-Rot</string>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="1">
             <widget class="QPushButton" name="pushButton_15">
              <property name="text">
@@ -153,18 +185,11 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="0">
-            <widget class="QPushButton" name="pushButton_9">
-             <property name="text">
-              <string>-Rot</string>
-             </property>
-            </widget>
-           </item>
           </layout>
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox_5">
+         <widget class="QGroupBox" name="groupBox_xyzStageControls">
           <property name="title">
            <string>XYZ Stage</string>
           </property>
@@ -185,72 +210,105 @@
             <number>1</number>
            </property>
            <item row="2" column="0">
-            <widget class="QPushButton" name="pushButton_3">
+            <widget class="QPushButton" name="pushButton_stage_jogXReverse">
              <property name="text">
-              <string>-X</string>
+              <string>X</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-previous"/>
              </property>
             </widget>
            </item>
            <item row="3" column="0">
-            <widget class="QPushButton" name="pushButton_14">
+            <widget class="QPushButton" name="pushButton_stage_moveToHomeXYZ">
+             <property name="statusTip">
+              <string>Homing XYZ</string>
+             </property>
              <property name="text">
-              <string>H</string>
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset theme="go-home"/>
              </property>
             </widget>
            </item>
            <item row="1" column="2">
-            <widget class="QPushButton" name="pushButton_12">
+            <widget class="QPushButton" name="pushButton_stage_moveToHomeY">
              <property name="text">
-              <string>Hy</string>
+              <string>Y</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-home"/>
              </property>
             </widget>
            </item>
            <item row="3" column="3">
-            <widget class="QPushButton" name="pushButton_6">
+            <widget class="QPushButton" name="pushButton_stage_jogZReverse">
              <property name="text">
-              <string>-Z</string>
+              <string>Z</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-down"/>
              </property>
             </widget>
            </item>
            <item row="1" column="3">
-            <widget class="QPushButton" name="pushButton_5">
+            <widget class="QPushButton" name="pushButton_stage_jogZ">
              <property name="text">
-              <string>+Z</string>
+              <string>Z</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-up"/>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QPushButton" name="pushButton_11">
+            <widget class="QPushButton" name="pushButton_stage_moveToHomeX">
              <property name="text">
-              <string>HX</string>
+              <string>X</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-home"/>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QPushButton" name="pushButton_stage_jogY">
              <property name="text">
-              <string>+Y</string>
+              <string>Y</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-up"/>
              </property>
             </widget>
            </item>
            <item row="3" column="1">
-            <widget class="QPushButton" name="pushButton_2">
+            <widget class="QPushButton" name="pushButton_stage_jogYReverse">
              <property name="text">
-              <string>-Y</string>
+              <string>Y</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-down"/>
              </property>
             </widget>
            </item>
            <item row="3" column="2">
-            <widget class="QPushButton" name="pushButton_13">
+            <widget class="QPushButton" name="pushButton_stage_moveToHomeZ">
              <property name="text">
-              <string>Hz</string>
+              <string>Z</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-home"/>
              </property>
             </widget>
            </item>
            <item row="2" column="2">
-            <widget class="QPushButton" name="pushButton_4">
+            <widget class="QPushButton" name="pushButton_stage_jogX">
              <property name="text">
-              <string>+X</string>
+              <string>X</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-next"/>
              </property>
             </widget>
            </item>
@@ -297,9 +355,15 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_17">
+         <widget class="QPushButton" name="pushButton_stage_abort">
+          <property name="toolTip">
+           <string>Abort all moves</string>
+          </property>
           <property name="text">
            <string>Abort</string>
+          </property>
+          <property name="icon">
+           <iconset theme="dialog-warning"/>
           </property>
          </widget>
         </item>
@@ -332,6 +396,9 @@
     </item>
     <item>
      <widget class="QGroupBox" name="groupBox_viewer">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="title">
        <string>Viewer</string>
       </property>
@@ -346,7 +413,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>24</height>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -382,6 +449,30 @@
    </property>
   </action>
  </widget>
+ <tabstops>
+  <tabstop>checkBox</tabstop>
+  <tabstop>pushButton_pliRot_topJogReverse</tabstop>
+  <tabstop>pushButton_16</tabstop>
+  <tabstop>pushButton_pliRot_topJog</tabstop>
+  <tabstop>pushButton_</tabstop>
+  <tabstop>pushButton_15</tabstop>
+  <tabstop>pushButton_10</tabstop>
+  <tabstop>pushButton_stage_moveToHomeX</tabstop>
+  <tabstop>pushButton_stage_jogY</tabstop>
+  <tabstop>pushButton_stage_moveToHomeY</tabstop>
+  <tabstop>pushButton_stage_jogZ</tabstop>
+  <tabstop>pushButton_stage_jogXReverse</tabstop>
+  <tabstop>pushButton_stage_jogX</tabstop>
+  <tabstop>pushButton_stage_moveToHomeXYZ</tabstop>
+  <tabstop>pushButton_stage_jogYReverse</tabstop>
+  <tabstop>pushButton_stage_moveToHomeZ</tabstop>
+  <tabstop>pushButton_stage_jogZReverse</tabstop>
+  <tabstop>lineEdit_6</tabstop>
+  <tabstop>lineEdit_8</tabstop>
+  <tabstop>lineEdit_9</tabstop>
+  <tabstop>pushButton_stage_abort</tabstop>
+  <tabstop>tabWidget</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

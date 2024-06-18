@@ -5,6 +5,7 @@ import numpy as np
 import pyqtgraph as pg
 import qdarktheme
 from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtGui import QPixmap
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -21,6 +22,10 @@ class MainWindow(QMainWindow):
         self.update_image(np.random.rand(100, 100))
         self.init_viewer()
         self.update_view()
+
+    def init_ui(self):
+        # Set the icons
+        self.ui.actionOpen.setIcon(QPixmap("resources/open.svg"))
 
     def init_viewer(self):
         # Initialize the image viewer
@@ -50,6 +55,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setWindowIcon(QPixmap("resources/linum-logo.svg"))
     qdarktheme.setup_theme("auto")  # Apply the system's color theme
     widget = MainWindow()
     widget.show()
