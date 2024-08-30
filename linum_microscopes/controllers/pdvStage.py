@@ -1,19 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""XYZ Stage Controller for the SBH"""
-
-# XYZ stage model:
-# XY stage model: https://www.pdvcn.com/motorized-xy-integral-combinating-stage/1197.html
-# Z stage model: https://www.pdvcn.com/motorized-lab-jack/electric-lifting-platform,-motorized-lab-jack,-elevator,-optical-sliding-lift-pt-gd401.html
-# Communication: Serial + GRBL
-
+"""XYZ Stage Controller (PDVCN brand) using Serial and GRBL protocol"""
 
 import logging
 import time
 from pathlib import Path
 
 import serial
+
+from linum_microscopes.config import config
 
 logging.basicConfig(
     format=f"%(levelname)s - %(asctime)s [{Path(__file__).name}:%(lineno)s | %(funcName)s()] %(message)s",
@@ -27,19 +23,11 @@ logging.basicConfig(
 # TODO: add unittest and integration tests for the stage.
 
 # References
+# https://github.com/gnea/grbl/blob/master/doc/markdown
+# https://www.sainsmart.com/blogs/news/grbl-v1-1-quick-reference
 # https://cncphilosophy.com/grbl-g-code-commands-list/
 # documentation G CODE - https://marlinfw.org/meta/gcode/
-# https://github.com/gnea/grbl/blob/master/doc/markdown/commands.md
-# https://www.sainsmart.com/blogs/news/grbl-v1-1-quick-reference
-# https://github.com/gnea/grbl/blob/master/doc/markdown
 
-# Configuration
-XYZ_STAGE_PORT = "COM7"
-HOMING_DIRECTION = int(0b111)  # XYZmask, 0 to keep, 1 to invert (in the ZYX order)
-AXIS_DIRECTION = int(0b000)
-X_AXIS_TRAVEL = 150.0 # mm
-Y_AXIS_TRAVEL = 150.0 # mm
-Z_AXIS_TRAVEL = 60.0 # mm
 
 GRBL_ERROR_CODES = {
     1: "GCode Command letter was not found.",
@@ -118,7 +106,13 @@ GRBL_SETTINGS_DEFINITIONS = {
 
 
 class PDVStageController:
-    def __init__(self, port=XYZ_STAGE_PORT):
+    def __init__(self, port: str):
+        """
+        Parameters
+        ----------
+        port
+            Serial port to connect to the stage.
+        """
         # Connect to the stage xyz and wake it up
         self.serial = serial.Serial(
             port,
@@ -189,13 +183,27 @@ class PDVStageController:
         self.wake_up()
 
         # Set the default GRBL settings
-        self.send_command(f"$23={HOMING_DIRECTION}")
-        self.send_command(f"$3={AXIS_DIRECTION}")
         self.send_command("$10=3")  # Set the status report format
-        self.send_command(f"$130={X_AXIS_TRAVEL}")
-        self.send_command(f"$131={Y_AXIS_TRAVEL}")
-        self.send_command(f"$132={Z_AXIS_TRAVEL}")
         self.send_command("$20=1")  # Activate the soft limits
+
+    def configure(self, settings: dict):  # TODO: test this function.
+        """
+        Configure the stage with the given settings
+        Parameters
+        ----------
+        settings
+            Dictionary of settings to configure
+        """
+        if "x_axis_travel" in settings:
+            self.send_command(f"$130={settings['x_axis_travel']}")
+        if "y_axis_travel" in settings:
+            self.send_command(f"$131={settings['y_axis_travel']}")
+        if "z_axis_travel" in settings:
+            self.send_command(f"$132={settings['z_axis_travel']}")
+        if "homing_direction" in settings:
+            self.send_command(f"$23={settings['homing_direction']}")
+        if "axis_direction" in settings:
+            self.send_command(f"$3={settings['axis_direction']}")
 
     def disconnect(self):
         self.serial.close()
@@ -289,7 +297,8 @@ class PDVStageController:
         if blocking:
             self.wait_for_movement_completion()
 
-    def move_relative(self, dx:float=None, dy:float=None, dz:float=None, speed: float=500, blocking: bool = True):
+    def move_relative(self, dx: float = None, dy: float = None, dz: float = None, speed: float = 500,
+                      blocking: bool = True):
         """
         Move the stage by a distance relative to the current position
         ----------
@@ -348,7 +357,7 @@ class PDVStageController:
         return position
 
     @property
-    def gcode_parameters(self)->dict:
+    def gcode_parameters(self) -> dict:
         """Gcode Parameters"""
         gcode_parameters = dict()
         response = self.send_command("$#")
@@ -368,7 +377,7 @@ class PDVStageController:
         return gcode_parser_state
 
     @property
-    def grbl_settings(self)->dict:
+    def grbl_settings(self) -> dict:
         """GRBL Settings"""
         grbl_settings = dict()
         response = self.send_command("$$")
@@ -402,63 +411,50 @@ class PDVStageController:
     @property
     def current_origin(self):
         """Get the current origin machine coordinate position"""
+        raise NotImplementedError("This property is not implemented yet")
 
-        pass
+
+class SOCTXYZStage(PDVStageController):  # TODO: test this class
+    def __init__(self):
+        super().__init__(config['soct-stage-xyz']['com_port'])
+
+        # Configure the stage
+        self.configure(config['soct-stage-xyz'])
+
+
+class PLIXYZStage(PDVStageController):  # TODO: test this class
+    def __init__(self):
+        super().__init__(config['pli-stage-xyz']['com_port'])
+
+        # Configure the stage
+        self.configure(config['pli-stage-xyz'])
+
+
+class PLIRotStage(PDVStageController):  # TODO: test this class
+    def __init__(self):
+        super().__init__(config['pli-stage-rot']['com_port'])
+
+        # Configure the stage
+        self.configure(config['pli-stage-rot'])
+
 
 def test_stage():
     # Connect
     stage = PDVStageController()
     stage.connect()
     print("Initial Position:", stage.position)
-
     print(stage.status_report)
 
     # Testing the homing
     stage.homing()
     print(stage.status_report)
 
-    # logging.info("Position after homing:", stage.position)
-    #
-    # Testing an absolute move
-    # stage.move(x=-10, y=-20)
-    # print(stage.get_status_report)
-
-    # logging.info("Position after absolute move:", stage.position)
-    #
-    # # Testing a relative move
-    # #stage.move_relative()
-
     # Read the setting
     print(stage.grbl_settings)
     print("Final position:", stage.position)
 
-    # stage.disconnect()
+    stage.disconnect()
+
 
 if __name__ == '__main__':
-    # Connect
-    stage = PDVStageController()
-    stage.connect()
-    print("Initial Position:", stage.position)
-
-    print(stage.status_report)
-
-    # Testing the homing
-    stage.homing()
-    print(stage.status_report)
-
-    # logging.info("Position after homing:", stage.position)
-    #
-    # Testing an absolute move
-    # stage.move(x=-10, y=-20)
-    # print(stage.get_status_report)
-
-    # logging.info("Position after absolute move:", stage.position)
-    #
-    # # Testing a relative move
-    # #stage.move_relative()
-
-    # Read the setting
-    print(stage.grbl_settings)
-    print("Final position:", stage.position)
-
-    # stage.disconnect()
+    test_stage()
