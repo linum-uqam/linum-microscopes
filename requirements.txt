@@ -3,3 +3,4 @@ pyside6
 pyqtgraph
 PyQtDarkTheme
 pyserial
+tomli

@@ -1,0 +1,18 @@
+[soct-stage-xyz]
+com_port = "COM7"
+x_axis_travel = 150.0 # mm, https://www.pdvcn.com/motorized-xy-integral-combinating-stage/1197.html
+y_axis_travel = 150.0 # mm
+z_axis_travel = 60.0 # mm, https://www.pdvcn.com/motorized-lab-jack/electric-lifting-platform,-motorized-lab-jack,-elevator,-optical-sliding-lift-pt-gd401.html
+homing_direction = 7 # XYZmask, int(0b111)
+axis_direction = 0 # XYZmask, int(0b000)
+
+[pli-stage-xyz]
+com_port = "COM5"
+x_axis_travel = 100.0 # mm
+y_axis_travel = 100.0 # mm
+z_axis_travel = 110.0 # mm
+
+
+[pli-stage-rot]
+com_port = "COM6"
+rotation_travel = 360.0 # degrees
