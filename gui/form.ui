@@ -437,7 +437,21 @@
      <string>Tools</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuConfiguration">
+    <property name="title">
+     <string>Configuration</string>
+    </property>
+    <property name="separatorsCollapsible">
+     <bool>false</bool>
+    </property>
+    <addaction name="actionMUSE_Microscopy_by_UV_surface_excitation"/>
+    <addaction name="actionOCT_Optical_Coherence_Tomography"/>
+    <addaction name="actionOCRT_Optical_Coherence_Refraction_Tomography"/>
+    <addaction name="actionPLI_Polarized_Light_Imaging"/>
+    <addaction name="actionS_OCT_Serial_OCT"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuConfiguration"/>
    <addaction name="menuTools"/>
    <addaction name="menuSettings"/>
    <addaction name="menuHelp"/>
@@ -446,6 +460,46 @@
   <action name="actionDark_mode">
    <property name="text">
     <string>Dark mode</string>
+   </property>
+  </action>
+  <action name="actionPLI_Polarized_Light_Imaging">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>PLI - Polarized Light Imaging</string>
+   </property>
+  </action>
+  <action name="actionMUSE_Microscopy_by_UV_surface_excitation">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>MUSE - Microscopy by UV surface excitation</string>
+   </property>
+  </action>
+  <action name="actionOCT_Optical_Coherence_Tomography">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>OCT - Optical Coherence Tomography</string>
+   </property>
+  </action>
+  <action name="actionS_OCT_Serial_OCT">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>S-OCT - Serial OCT</string>
+   </property>
+  </action>
+  <action name="actionOCRT_Optical_Coherence_Refraction_Tomography">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>OCRT - Optical Coherence Refraction Tomography</string>
    </property>
   </action>
  </widget>
