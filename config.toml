@@ -7,12 +7,13 @@ homing_direction = 7 # XYZmask, int(0b111)
 axis_direction = 0 # XYZmask, int(0b000)
 
 [pli-stage-xyz]
-com_port = "COM5"
+com_port = "COM13"
 x_axis_travel = 100.0 # mm
 y_axis_travel = 100.0 # mm
 z_axis_travel = 110.0 # mm
 
 
 [pli-stage-rot]
-com_port = "COM6"
-rotation_travel = 360.0 # degrees
+com_port = "COM12"
+top_rotation_travel = 335
+bottom_rotation_travel = 180.0 # degrees
