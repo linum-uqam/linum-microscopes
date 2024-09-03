@@ -163,7 +163,7 @@ class PDVStageController:
                 logging.error(error_message)
             new_line = self.serial.readline().strip().decode("utf-8")
             response.append(new_line)
-        response.remove("ok")  # Remove the last ok value
+        if "ok" in response: response.remove("ok")  # Remove the last ok value
         if len(response) == 1:
             response = response[0]
         logging.debug([command, response])  # DEBUG
@@ -196,8 +196,12 @@ class PDVStageController:
         """
         if "x_axis_travel" in settings:
             self.send_command(f"$130={settings['x_axis_travel']}")
+        if "top_rotation_travel" in settings:
+            self.send_command(f"$130={settings['top_rotation_travel']}")
         if "y_axis_travel" in settings:
             self.send_command(f"$131={settings['y_axis_travel']}")
+        if "bottom_rotation_travel" in settings:
+            self.send_command(f"$131={settings['bottom_rotation_travel']}")
         if "z_axis_travel" in settings:
             self.send_command(f"$132={settings['z_axis_travel']}")
         if "homing_direction" in settings:
@@ -433,6 +437,7 @@ class PLIXYZStage(PDVStageController):  # TODO: test this class
 class PLIRotStage(PDVStageController):  # TODO: test this class
     def __init__(self):
         super().__init__(config['pli-stage-rot']['com_port'])
+        self.connect()
 
         # Configure the stage
         self.configure(config['pli-stage-rot'])
