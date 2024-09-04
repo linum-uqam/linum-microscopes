@@ -421,7 +421,7 @@ class PDVStageController:
 class SOCTXYZStage(PDVStageController):  # TODO: test this class
     def __init__(self):
         super().__init__(config['soct-stage-xyz']['com_port'])
-
+        self.connect()
         # Configure the stage
         self.configure(config['soct-stage-xyz'])
 
@@ -429,7 +429,7 @@ class SOCTXYZStage(PDVStageController):  # TODO: test this class
 class PLIXYZStage(PDVStageController):  # TODO: test this class
     def __init__(self):
         super().__init__(config['pli-stage-xyz']['com_port'])
-
+        self.connect()
         # Configure the stage
         self.configure(config['pli-stage-xyz'])
 
