@@ -38,7 +38,7 @@
           </property>
           <layout class="QGridLayout" name="gridLayout">
            <item row="1" column="1">
-            <widget class="QLCDNumber" name="lcdNumber_2"/>
+            <widget class="QLCDNumber" name="lcdNumber_y_mm"/>
            </item>
            <item row="4" column="1">
             <widget class="QLCDNumber" name="lcdNumber_5"/>
@@ -72,21 +72,21 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLCDNumber" name="lcdNumber">
+            <widget class="QLCDNumber" name="lcdNumber_x_mm">
              <property name="enabled">
               <bool>true</bool>
              </property>
              <property name="frameShape">
-              <enum>QFrame::Box</enum>
+              <enum>QFrame::Shape::Box</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Shadow::Raised</enum>
              </property>
              <property name="smallDecimalPoint">
               <bool>false</bool>
              </property>
              <property name="segmentStyle">
-              <enum>QLCDNumber::Filled</enum>
+              <enum>QLCDNumber::SegmentStyle::Filled</enum>
              </property>
              <property name="value" stdset="0">
               <double>0.000000000000000</double>
@@ -101,7 +101,7 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QLCDNumber" name="lcdNumber_3"/>
+            <widget class="QLCDNumber" name="lcdNumber_z_mm"/>
            </item>
            <item row="3" column="1">
             <widget class="QLCDNumber" name="lcdNumber_4"/>
@@ -328,18 +328,12 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEdit_6"/>
-           </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_8">
              <property name="text">
               <string>XY (mm)</string>
              </property>
             </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="lineEdit_8"/>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="label_9">
@@ -348,8 +342,41 @@
              </property>
             </widget>
            </item>
+           <item row="0" column="1">
+            <widget class="QDoubleSpinBox" name="doubleSpinBox_rot_jogstep_mm">
+             <property name="value">
+              <double>5.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QDoubleSpinBox" name="doubleSpinBox_xy_jogstep_mm">
+             <property name="decimals">
+              <number>3</number>
+             </property>
+             <property name="maximum">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>1.000000000000000</double>
+             </property>
+            </widget>
+           </item>
            <item row="2" column="1">
-            <widget class="QLineEdit" name="lineEdit_9"/>
+            <widget class="QDoubleSpinBox" name="doubleSpinBox_z_jogstep_mm">
+             <property name="decimals">
+              <number>3</number>
+             </property>
+             <property name="minimum">
+              <double>0.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>1.000000000000000</double>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -370,7 +397,7 @@
         <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -413,7 +440,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>37</height>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -444,11 +471,11 @@
     <property name="separatorsCollapsible">
      <bool>false</bool>
     </property>
-    <addaction name="actionMUSE_Microscopy_by_UV_surface_excitation"/>
+    <addaction name="actionS_OCT_Serial_OCT"/>
     <addaction name="actionOCT_Optical_Coherence_Tomography"/>
+    <addaction name="actionMUSE_Microscopy_by_UV_surface_excitation"/>
     <addaction name="actionOCRT_Optical_Coherence_Refraction_Tomography"/>
     <addaction name="actionPLI_Polarized_Light_Imaging"/>
-    <addaction name="actionS_OCT_Serial_OCT"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuConfiguration"/>
@@ -502,6 +529,11 @@
     <string>OCRT - Optical Coherence Refraction Tomography</string>
    </property>
   </action>
+  <action name="actionMicroscope_Setup">
+   <property name="text">
+    <string>Microscope Setup</string>
+   </property>
+  </action>
  </widget>
  <tabstops>
   <tabstop>checkBox</tabstop>
@@ -521,9 +553,6 @@
   <tabstop>pushButton_stage_jogYReverse</tabstop>
   <tabstop>pushButton_stage_moveToHomeZ</tabstop>
   <tabstop>pushButton_stage_jogZReverse</tabstop>
-  <tabstop>lineEdit_6</tabstop>
-  <tabstop>lineEdit_8</tabstop>
-  <tabstop>lineEdit_9</tabstop>
   <tabstop>pushButton_stage_abort</tabstop>
   <tabstop>tabWidget</tabstop>
  </tabstops>

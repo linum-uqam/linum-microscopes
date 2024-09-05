@@ -16,9 +16,9 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QFormLayout, QFrame,
-    QGridLayout, QGroupBox, QHBoxLayout, QLCDNumber,
-    QLabel, QLineEdit, QMainWindow, QMenu,
+from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QFormLayout,
+    QFrame, QGridLayout, QGroupBox, QHBoxLayout,
+    QLCDNumber, QLabel, QMainWindow, QMenu,
     QMenuBar, QPushButton, QSizePolicy, QSpacerItem,
     QStatusBar, QTabWidget, QVBoxLayout, QWidget)
 
@@ -59,10 +59,10 @@ class Ui_MainWindow(object):
         self.groupBox_6.setObjectName(u"groupBox_6")
         self.gridLayout = QGridLayout(self.groupBox_6)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.lcdNumber_2 = QLCDNumber(self.groupBox_6)
-        self.lcdNumber_2.setObjectName(u"lcdNumber_2")
+        self.lcdNumber_y_mm = QLCDNumber(self.groupBox_6)
+        self.lcdNumber_y_mm.setObjectName(u"lcdNumber_y_mm")
 
-        self.gridLayout.addWidget(self.lcdNumber_2, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.lcdNumber_y_mm, 1, 1, 1, 1)
 
         self.lcdNumber_5 = QLCDNumber(self.groupBox_6)
         self.lcdNumber_5.setObjectName(u"lcdNumber_5")
@@ -89,26 +89,26 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.label_3, 2, 0, 1, 1)
 
-        self.lcdNumber = QLCDNumber(self.groupBox_6)
-        self.lcdNumber.setObjectName(u"lcdNumber")
-        self.lcdNumber.setEnabled(True)
-        self.lcdNumber.setFrameShape(QFrame.Box)
-        self.lcdNumber.setFrameShadow(QFrame.Raised)
-        self.lcdNumber.setSmallDecimalPoint(False)
-        self.lcdNumber.setSegmentStyle(QLCDNumber.Filled)
-        self.lcdNumber.setProperty("value", 0.000000000000000)
+        self.lcdNumber_x_mm = QLCDNumber(self.groupBox_6)
+        self.lcdNumber_x_mm.setObjectName(u"lcdNumber_x_mm")
+        self.lcdNumber_x_mm.setEnabled(True)
+        self.lcdNumber_x_mm.setFrameShape(QFrame.Shape.Box)
+        self.lcdNumber_x_mm.setFrameShadow(QFrame.Shadow.Raised)
+        self.lcdNumber_x_mm.setSmallDecimalPoint(False)
+        self.lcdNumber_x_mm.setSegmentStyle(QLCDNumber.SegmentStyle.Filled)
+        self.lcdNumber_x_mm.setProperty("value", 0.000000000000000)
 
-        self.gridLayout.addWidget(self.lcdNumber, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.lcdNumber_x_mm, 0, 1, 1, 1)
 
         self.label = QLabel(self.groupBox_6)
         self.label.setObjectName(u"label")
 
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
 
-        self.lcdNumber_3 = QLCDNumber(self.groupBox_6)
-        self.lcdNumber_3.setObjectName(u"lcdNumber_3")
+        self.lcdNumber_z_mm = QLCDNumber(self.groupBox_6)
+        self.lcdNumber_z_mm.setObjectName(u"lcdNumber_z_mm")
 
-        self.gridLayout.addWidget(self.lcdNumber_3, 2, 1, 1, 1)
+        self.gridLayout.addWidget(self.lcdNumber_z_mm, 2, 1, 1, 1)
 
         self.lcdNumber_4 = QLCDNumber(self.groupBox_6)
         self.lcdNumber_4.setObjectName(u"lcdNumber_4")
@@ -254,30 +254,38 @@ class Ui_MainWindow(object):
 
         self.formLayout.setWidget(0, QFormLayout.LabelRole, self.label_6)
 
-        self.lineEdit_6 = QLineEdit(self.groupBox_7)
-        self.lineEdit_6.setObjectName(u"lineEdit_6")
-
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.lineEdit_6)
-
         self.label_8 = QLabel(self.groupBox_7)
         self.label_8.setObjectName(u"label_8")
 
         self.formLayout.setWidget(1, QFormLayout.LabelRole, self.label_8)
-
-        self.lineEdit_8 = QLineEdit(self.groupBox_7)
-        self.lineEdit_8.setObjectName(u"lineEdit_8")
-
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.lineEdit_8)
 
         self.label_9 = QLabel(self.groupBox_7)
         self.label_9.setObjectName(u"label_9")
 
         self.formLayout.setWidget(2, QFormLayout.LabelRole, self.label_9)
 
-        self.lineEdit_9 = QLineEdit(self.groupBox_7)
-        self.lineEdit_9.setObjectName(u"lineEdit_9")
+        self.doubleSpinBox_rot_jogstep_mm = QDoubleSpinBox(self.groupBox_7)
+        self.doubleSpinBox_rot_jogstep_mm.setObjectName(u"doubleSpinBox_rot_jogstep_mm")
+        self.doubleSpinBox_rot_jogstep_mm.setValue(5.000000000000000)
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.lineEdit_9)
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.doubleSpinBox_rot_jogstep_mm)
+
+        self.doubleSpinBox_xy_jogstep_mm = QDoubleSpinBox(self.groupBox_7)
+        self.doubleSpinBox_xy_jogstep_mm.setObjectName(u"doubleSpinBox_xy_jogstep_mm")
+        self.doubleSpinBox_xy_jogstep_mm.setDecimals(3)
+        self.doubleSpinBox_xy_jogstep_mm.setMaximum(10.000000000000000)
+        self.doubleSpinBox_xy_jogstep_mm.setValue(1.000000000000000)
+
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.doubleSpinBox_xy_jogstep_mm)
+
+        self.doubleSpinBox_z_jogstep_mm = QDoubleSpinBox(self.groupBox_7)
+        self.doubleSpinBox_z_jogstep_mm.setObjectName(u"doubleSpinBox_z_jogstep_mm")
+        self.doubleSpinBox_z_jogstep_mm.setDecimals(3)
+        self.doubleSpinBox_z_jogstep_mm.setMinimum(0.000000000000000)
+        self.doubleSpinBox_z_jogstep_mm.setMaximum(10.000000000000000)
+        self.doubleSpinBox_z_jogstep_mm.setValue(1.000000000000000)
+
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.doubleSpinBox_z_jogstep_mm)
 
 
         self.verticalLayout_2.addWidget(self.groupBox_7)
@@ -314,7 +322,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 800, 37))
+        self.menubar.setGeometry(QRect(0, 0, 800, 33))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuHelp = QMenu(self.menubar)
@@ -346,10 +354,7 @@ class Ui_MainWindow(object):
         QWidget.setTabOrder(self.pushButton_stage_moveToHomeXYZ, self.pushButton_stage_jogYReverse)
         QWidget.setTabOrder(self.pushButton_stage_jogYReverse, self.pushButton_stage_moveToHomeZ)
         QWidget.setTabOrder(self.pushButton_stage_moveToHomeZ, self.pushButton_stage_jogZReverse)
-        QWidget.setTabOrder(self.pushButton_stage_jogZReverse, self.lineEdit_6)
-        QWidget.setTabOrder(self.lineEdit_6, self.lineEdit_8)
-        QWidget.setTabOrder(self.lineEdit_8, self.lineEdit_9)
-        QWidget.setTabOrder(self.lineEdit_9, self.pushButton_stage_abort)
+        QWidget.setTabOrder(self.pushButton_stage_jogZReverse, self.pushButton_stage_abort)
         QWidget.setTabOrder(self.pushButton_stage_abort, self.tabWidget)
 
         self.menubar.addAction(self.menuFile.menuAction())

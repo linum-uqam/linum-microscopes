@@ -123,6 +123,9 @@ class PDVStageController:
         )
         self.origin_position = [0.0, 0.0, 0.0]
 
+    def __del__(self):
+        self.disconnect()
+
     def send_command(self, command: str):
         """
         Send a grbl command to the stage using serial communication.
@@ -186,7 +189,7 @@ class PDVStageController:
         self.send_command("$10=3")  # Set the status report format
         self.send_command("$20=1")  # Activate the soft limits
 
-    def configure(self, settings: dict):  # TODO: test this function.
+    def configure(self, settings: dict):
         """
         Configure the stage with the given settings
         Parameters
@@ -418,7 +421,7 @@ class PDVStageController:
         raise NotImplementedError("This property is not implemented yet")
 
 
-class SOCTXYZStage(PDVStageController):  # TODO: test this class
+class SOCTXYZStage(PDVStageController):
     def __init__(self):
         super().__init__(config['soct-stage-xyz']['com_port'])
         self.connect()
