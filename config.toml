@@ -11,9 +11,13 @@ com_port = "COM13"
 x_axis_travel = 100.0 # mm
 y_axis_travel = 100.0 # mm
 z_axis_travel = 110.0 # mm
-
+homing_direction = 7 # XYZmask, int(0b111) ZYX
+axis_direction = 5 # XYZmask, int(0b101)
+z_step_for_1mm = 340 # $102, number of z-steps to move 1 mm.
 
 [pli-stage-rot]
 com_port = "COM12"
 top_rotation_travel = 335
 bottom_rotation_travel = 180.0 # degrees
+homing_direction = 3 #3,  XYZmask, int(0b011)
+axis_direction = 3 #3,  XYZmask, int(0b011)
