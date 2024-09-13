@@ -17,8 +17,6 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S")
 
 # TODOS
-# TODO: add qt signal to emit the stage state and position
-# TODO: add a method to poll the state and position
 # TODO: instead of keeping an internal origin coordinate, use the active coordinate frame.
 # TODO: add unittest and integration tests for the stage.
 
@@ -211,6 +209,8 @@ class PDVStageController:
             self.send_command(f"$23={settings['homing_direction']}")
         if "axis_direction" in settings:
             self.send_command(f"$3={settings['axis_direction']}")
+        if "z_step_for_1mm" in settings:
+            self.send_command(f"$102={settings['z_step_for_1mm']}")
 
     def disconnect(self):
         self.serial.close()
@@ -429,7 +429,7 @@ class SOCTXYZStage(PDVStageController):
         self.configure(config['soct-stage-xyz'])
 
 
-class PLIXYZStage(PDVStageController):  # TODO: test this class
+class PLIXYZStage(PDVStageController):
     def __init__(self):
         super().__init__(config['pli-stage-xyz']['com_port'])
         self.connect()
@@ -437,13 +437,29 @@ class PLIXYZStage(PDVStageController):  # TODO: test this class
         self.configure(config['pli-stage-xyz'])
 
 
-class PLIRotStage(PDVStageController):  # TODO: test this class
+class PLIRotStage(PDVStageController):
     def __init__(self):
         super().__init__(config['pli-stage-rot']['com_port'])
         self.connect()
 
         # Configure the stage
         self.configure(config['pli-stage-rot'])
+
+
+
+    @property
+    def position(self):
+        """Top and Bottom rotation in degrees. The third element is unused"""
+        position = self.status_report["pos_mm"]  # Position in machine coordinates
+        position = [x - x0 for x, x0 in zip(position, self.origin_position)]
+        return position
+
+
+
+
+
+    # TODO : Overload the position and move methods to change the parameters name for theta and phi
+    # FIXME: top and bottom rotation are not in the same directions
 
 
 def test_stage():
