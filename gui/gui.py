@@ -4,16 +4,21 @@ import sys
 import numpy as np
 import pyqtgraph as pg
 import qdarktheme
+from PySide6 import QtCore
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtWidgets import QApplication, QMainWindow
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QActionGroup
 import logging
 from pathlib import Path
 import time
 
 
+from linum_microscopes.controllers import pcoCamera
 from linum_microscopes.controllers import pdvStage
 
+# TODO: put the camera capture in a different thread to avoid freezing the GUI
+# TODO: problem with the z range for the PLI
+# TODO: add tools to set the min-max range in software for the ocnfig (ex: max height for PLI).
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -29,8 +34,10 @@ logging.basicConfig(
 # Tasks
 # TODO: deactivate the stage controller if not homed or configured
 # TODO: create a separate thread for every hardware component
-# BUG: homing will break the stage polling
-# BUG: the stage seems to go off limits
+# FIXME: homing will break the stage polling
+# FIXME: the stage seems to go off limits
+# TODO: add a message box during homing sequence.
+# FIXME: problem with frequent jogs, the GUI freezes
 
 
 
@@ -171,12 +178,33 @@ class MainWindow(QMainWindow):
         self.update_view()
         self.stage_xyz = None
 
+        # Prepare the camera timer
+        self.acquisitionStatus = False
+        fps = 30
+        self.timeInterval = int(1000 / fps)
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.acquire_image)
+        self.timer.setInterval(self.timeInterval)
+        self.timer.setSingleShot(True)
+        if self.acquisitionStatus:
+            self.timer.start()
+
     def init_ui(self):
         # Set the icons
         #self.ui.actionOpen.setIcon(QPixmap("resources/open.svg"))
 
+        # Set menu actions
+        microscopeSetupGroupTools = QActionGroup(self)
+        microscopeSetupGroupTools.addAction(self.ui.actionMUSE_Microscopy_by_UV_surface_excitation)
+        microscopeSetupGroupTools.addAction(self.ui.actionOCT_Optical_Coherence_Tomography)
+        microscopeSetupGroupTools.addAction(self.ui.actionOCRT_Optical_Coherence_Refraction_Tomography)
+        microscopeSetupGroupTools.addAction(self.ui.actionPLI_Polarized_Light_Imaging)
+        microscopeSetupGroupTools.addAction(self.ui.actionS_OCT_Serial_OCT)
+        microscopeSetupGroupTools.setExclusive(True)
+
         # Signal and Slots
         self.ui.actionS_OCT_Serial_OCT.triggered.connect(self.set_microscope_as_soct)
+        self.ui.actionPLI_Polarized_Light_Imaging.triggered.connect(self.set_microscope_as_pli)
 
         # Stage XYZ job control
         self.ui.pushButton_stage_jogX.clicked.connect(self.jog_x)
@@ -186,7 +214,21 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_stage_jogZ.clicked.connect(self.jog_z)
         self.ui.pushButton_stage_jogZReverse.clicked.connect(self.reverse_jogz)
         self.ui.pushButton_stage_moveToHomeXYZ.clicked.connect(self.homing_xyz)
-        self.ui.pushButton_stage_abort.clicked.connect(self.abort_moves)
+        self.ui.pushButton_stage_stop.clicked.connect(self.stop_moves)
+
+        # Rotation stage action
+        self.ui.pushButton_pliRot_topJog.clicked.connect(self.jog_top_rot)
+        self.ui.pushButton_pliRot_topJogReverse.clicked.connect(self.jog_top_rot_reverse)
+        self.ui.pushButton_pliRot_bottomJog.clicked.connect(self.jog_bottom_rot)
+        self.ui.pushButton_pliRot_bottomJogReverse.clicked.connect(self.jog_bottom_rot_reverse)
+        self.ui.pushButton_pliRot_home.clicked.connect(self.homing_rot)
+
+        # Camera Actions
+        self.ui.pushButton_camera_acquire.clicked.connect(self.acquire_image)
+
+        # Hide some panels if not used
+        self.ui.groupBox_stageXYZ.hide()
+        self.ui.groupBox_stageRot.hide()
 
     def init_viewer(self):
         # Initialize the image viewer
@@ -208,9 +250,10 @@ class MainWindow(QMainWindow):
     def update_image(self, image):
         self.image = image
 
-    def update_view(self):
+    def update_view(self, img: np.ndarray=None):
         # Simulate an image
-        img = np.random.rand(100, 100)
+        if img is None:
+            img = np.random.rand(100, 100)
         self.imageItem.setImage(img)
 
     def update_position(self, x, y, z):
@@ -218,9 +261,17 @@ class MainWindow(QMainWindow):
         self.ui.lcdNumber_y_mm.display(y)
         self.ui.lcdNumber_z_mm.display(z)
 
+    def update_position_rot(self, rot_top, rot_bottom, z):
+        self.ui.lcdNumber_rotTop.display(rot_top)
+        self.ui.lcdNumber_rotBottom.display(rot_bottom)
 
     def set_microscope_as_soct(self):
         logging.info("Setting the microscope as soct.")
+
+        # Display the XYZ Stage Control
+        self.ui.groupBox_stageXYZ.show()
+        self.ui.groupBox_stageRot.hide()
+
         if hasattr(self, "thread_stagexyz"):
             print("Exiting the thread")
             self.thread_stagexyz.stop()
@@ -230,6 +281,36 @@ class MainWindow(QMainWindow):
         self.thread_stagexyz = StageXYZThread(self.stage_xyz)
         self.thread_stagexyz.sig_stage_position.connect(self.update_position)
         self.thread_stagexyz.start()
+
+
+
+
+        # Hide the rotation control
+        #self.ui.
+
+    def set_microscope_as_pli(self):
+        logging.info("Setting the microscope as PLI.")
+
+        # Update the controllers display
+        self.ui.groupBox_stageXYZ.show()
+        self.ui.groupBox_stageRot.show()
+
+        if hasattr(self, "thread_stagexyz"):
+            print("Exiting thread")
+            self.thread_stagexyz.stop()
+            del self.thread_stagexyz
+
+        self.stage_rot = pdvStage.PLIRotStage()
+        self.thread_stagerot = StageXYZThread(self.stage_rot)
+        self.thread_stagerot.sig_stage_position.connect(self.update_position_rot)
+        self.stage_xyz = pdvStage.PLIXYZStage()
+        self.thread_stagexyz = StageXYZThread(self.stage_xyz)
+        self.thread_stagexyz.sig_stage_position.connect(self.update_position)
+        self.thread_stagerot.start()
+        self.thread_stagexyz.start()
+
+
+
 
     def jog_x(self):
         distance = self.ui.doubleSpinBox_xy_jogstep_mm.value()
@@ -255,11 +336,54 @@ class MainWindow(QMainWindow):
         distance = self.ui.doubleSpinBox_z_jogstep_mm.value()
         self.stage_xyz.move_relative(dz=-distance, blocking=False)
 
+    def jog_top_rot(self):
+        angle_top = self.ui.doubleSpinBox_rot_jogstep_deg.value()
+        angle_bottom = 0.0
+        if self.ui.checkBox_linkTopBottomRot.isChecked():
+            angle_bottom = angle_top
+        self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
+
+
+    def jog_top_rot_reverse(self):
+        angle_top = -self.ui.doubleSpinBox_rot_jogstep_deg.value()
+        angle_bottom = 0.0
+        if self.ui.checkBox_linkTopBottomRot.isChecked():
+            angle_bottom = angle_top
+        self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
+
+    def jog_bottom_rot(self):
+        angle_bottom = self.ui.doubleSpinBox_rot_jogstep_deg.value()
+        angle_top = 0
+        if self.ui.checkBox_linkTopBottomRot.isChecked():
+            angle_top = angle_bottom
+        self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
+
+    def jog_bottom_rot_reverse(self):
+        angle_bottom = -self.ui.doubleSpinBox_rot_jogstep_deg.value()
+        angle_top = 0
+        if self.ui.checkBox_linkTopBottomRot.isChecked():
+            angle_top = angle_bottom
+        self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
+
     def homing_xyz(self):
         self.stage_xyz.homing()
 
-    def abort_moves(self):
-        self.stage_xyz.abort()
+    def homing_rot(self):
+        self.stage_rot.homing()
+
+    def stop_moves(self):
+        if hasattr(self, "stage_xyz") and self.stage_xyz is not None:
+            self.stage_xyz.stop()
+        if hasattr(self, "stage_rot") and self.stage_rot is not None:
+            self.stage_rot.stop()
+
+    def acquire_image(self):
+        logging.info("Acquiring an image")
+        img = pcoCamera.acquire_single_image()
+        self.update_view(img)
+        self.acquisitionStatus = True
+        self.timer.start()
+
 
 
 if __name__ == "__main__":

@@ -32,362 +32,439 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QGroupBox" name="groupBox_6">
-          <property name="title">
-           <string>Position</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout">
-           <item row="1" column="1">
-            <widget class="QLCDNumber" name="lcdNumber_y_mm"/>
-           </item>
-           <item row="4" column="1">
-            <widget class="QLCDNumber" name="lcdNumber_5"/>
-           </item>
-           <item row="5" column="0">
-            <widget class="QCheckBox" name="checkBox">
-             <property name="text">
-              <string>Link top / bottom</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>BottomRot (deg)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Y (mm)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Z (mm)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLCDNumber" name="lcdNumber_x_mm">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::Shape::Box</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Shadow::Raised</enum>
-             </property>
-             <property name="smallDecimalPoint">
-              <bool>false</bool>
-             </property>
-             <property name="segmentStyle">
-              <enum>QLCDNumber::SegmentStyle::Filled</enum>
-             </property>
-             <property name="value" stdset="0">
-              <double>0.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>X (mm)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLCDNumber" name="lcdNumber_z_mm"/>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLCDNumber" name="lcdNumber_4"/>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>TopRot (deg)</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBox_3">
-          <property name="title">
-           <string>Top Rotation</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_2">
-           <property name="spacing">
-            <number>1</number>
-           </property>
-           <item row="0" column="1">
-            <widget class="QPushButton" name="pushButton_16">
-             <property name="text">
-              <string>H</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QPushButton" name="pushButton_pliRot_topJogReverse">
-             <property name="text">
-              <string>θ</string>
-             </property>
-             <property name="icon">
-              <iconset theme="go-previous"/>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QPushButton" name="pushButton_pliRot_topJog">
-             <property name="text">
-              <string>θ</string>
-             </property>
-             <property name="icon">
-              <iconset theme="go-next"/>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBox_4">
-          <property name="title">
-           <string>Bottom Rotation</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_3">
-           <property name="spacing">
-            <number>1</number>
-           </property>
-           <item row="0" column="2">
-            <widget class="QPushButton" name="pushButton_10">
-             <property name="text">
-              <string>+Rot</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QPushButton" name="pushButton_">
-             <property name="text">
-              <string>-Rot</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QPushButton" name="pushButton_15">
-             <property name="text">
-              <string>H</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBox_xyzStageControls">
+         <widget class="QGroupBox" name="groupBox_stageXYZ">
           <property name="title">
            <string>XYZ Stage</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_4">
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="sizeConstraint">
+            <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+           </property>
            <property name="leftMargin">
-            <number>12</number>
+            <number>3</number>
            </property>
            <property name="topMargin">
-            <number>12</number>
+            <number>3</number>
            </property>
            <property name="rightMargin">
-            <number>12</number>
+            <number>3</number>
            </property>
            <property name="bottomMargin">
-            <number>12</number>
+            <number>3</number>
            </property>
+           <item>
+            <widget class="QGroupBox" name="groupBox_stageXYZ_position">
+             <property name="title">
+              <string>Position</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+             <layout class="QFormLayout" name="formLayout_2">
+              <property name="leftMargin">
+               <number>9</number>
+              </property>
+              <property name="topMargin">
+               <number>9</number>
+              </property>
+              <property name="rightMargin">
+               <number>9</number>
+              </property>
+              <property name="bottomMargin">
+               <number>9</number>
+              </property>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>X (mm)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLCDNumber" name="lcdNumber_x_mm">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::Shape::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Shadow::Raised</enum>
+                </property>
+                <property name="smallDecimalPoint">
+                 <bool>false</bool>
+                </property>
+                <property name="segmentStyle">
+                 <enum>QLCDNumber::SegmentStyle::Flat</enum>
+                </property>
+                <property name="value" stdset="0">
+                 <double>0.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>Y (mm)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLCDNumber" name="lcdNumber_y_mm">
+                <property name="frameShape">
+                 <enum>QFrame::Shape::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Shadow::Raised</enum>
+                </property>
+                <property name="segmentStyle">
+                 <enum>QLCDNumber::SegmentStyle::Flat</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>Z (mm)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLCDNumber" name="lcdNumber_z_mm">
+                <property name="frameShape">
+                 <enum>QFrame::Shape::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Shadow::Raised</enum>
+                </property>
+                <property name="segmentStyle">
+                 <enum>QLCDNumber::SegmentStyle::Flat</enum>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox_stageXYZ_control">
+             <property name="title">
+              <string>Control</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_3">
+              <property name="leftMargin">
+               <number>9</number>
+              </property>
+              <property name="topMargin">
+               <number>9</number>
+              </property>
+              <property name="rightMargin">
+               <number>9</number>
+              </property>
+              <property name="bottomMargin">
+               <number>9</number>
+              </property>
+              <property name="spacing">
+               <number>6</number>
+              </property>
+              <item row="1" column="0">
+               <widget class="QPushButton" name="pushButton_stage_jogXReverse">
+                <property name="text">
+                 <string>X</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="go-previous"/>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="3">
+               <widget class="QPushButton" name="pushButton_stage_jogZ">
+                <property name="text">
+                 <string>Z</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="go-up"/>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3">
+               <widget class="QPushButton" name="pushButton_stage_jogX">
+                <property name="text">
+                 <string>X</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="go-next"/>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QPushButton" name="pushButton_stage_jogY">
+                <property name="text">
+                 <string>Y</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="go-up"/>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QPushButton" name="pushButton_stage_jogYReverse">
+                <property name="text">
+                 <string>Y</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="go-down"/>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="3">
+               <widget class="QPushButton" name="pushButton_stage_jogZReverse">
+                <property name="text">
+                 <string>Z</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="go-down"/>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QPushButton" name="pushButton_stage_moveToHomeXYZ">
+                <property name="statusTip">
+                 <string>Homing XYZ</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset theme="go-home"/>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_8">
+                <property name="text">
+                 <string>XY Step (mm)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="label_9">
+                <property name="text">
+                 <string>Z Step (mm)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QDoubleSpinBox" name="doubleSpinBox_xy_jogstep_mm">
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="maximum">
+                 <double>10.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>1.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QDoubleSpinBox" name="doubleSpinBox_z_jogstep_mm">
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="minimum">
+                 <double>0.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>10.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>1.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_stageRot">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="title">
+           <string>Rotation Stage</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
            <property name="spacing">
             <number>1</number>
            </property>
-           <item row="2" column="0">
-            <widget class="QPushButton" name="pushButton_stage_jogXReverse">
-             <property name="text">
-              <string>X</string>
+           <item>
+            <widget class="QGroupBox" name="groupBox_stageRot_position">
+             <property name="title">
+              <string>Position</string>
              </property>
-             <property name="icon">
-              <iconset theme="go-previous"/>
+             <property name="flat">
+              <bool>true</bool>
              </property>
+             <layout class="QFormLayout" name="formLayout">
+              <item row="2" column="1">
+               <widget class="QLCDNumber" name="lcdNumber_rotBottom">
+                <property name="frameShape">
+                 <enum>QFrame::Shape::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Shadow::Raised</enum>
+                </property>
+                <property name="segmentStyle">
+                 <enum>QLCDNumber::SegmentStyle::Flat</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_bottomRotPosition">
+                <property name="text">
+                 <string>Bottom (deg)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_topRotPosition">
+                <property name="text">
+                 <string>Top (deg)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLCDNumber" name="lcdNumber_rotTop">
+                <property name="frameShape">
+                 <enum>QFrame::Shape::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Shadow::Raised</enum>
+                </property>
+                <property name="segmentStyle">
+                 <enum>QLCDNumber::SegmentStyle::Flat</enum>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
-           <item row="3" column="0">
-            <widget class="QPushButton" name="pushButton_stage_moveToHomeXYZ">
-             <property name="statusTip">
-              <string>Homing XYZ</string>
+           <item>
+            <widget class="QGroupBox" name="groupBox_stageRot_control">
+             <property name="title">
+              <string>Control</string>
              </property>
-             <property name="text">
-              <string/>
+             <property name="flat">
+              <bool>true</bool>
              </property>
-             <property name="icon">
-              <iconset theme="go-home"/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QPushButton" name="pushButton_stage_moveToHomeY">
-             <property name="text">
-              <string>Y</string>
-             </property>
-             <property name="icon">
-              <iconset theme="go-home"/>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="3">
-            <widget class="QPushButton" name="pushButton_stage_jogZReverse">
-             <property name="text">
-              <string>Z</string>
-             </property>
-             <property name="icon">
-              <iconset theme="go-down"/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="3">
-            <widget class="QPushButton" name="pushButton_stage_jogZ">
-             <property name="text">
-              <string>Z</string>
-             </property>
-             <property name="icon">
-              <iconset theme="go-up"/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QPushButton" name="pushButton_stage_moveToHomeX">
-             <property name="text">
-              <string>X</string>
-             </property>
-             <property name="icon">
-              <iconset theme="go-home"/>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QPushButton" name="pushButton_stage_jogY">
-             <property name="text">
-              <string>Y</string>
-             </property>
-             <property name="icon">
-              <iconset theme="go-up"/>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QPushButton" name="pushButton_stage_jogYReverse">
-             <property name="text">
-              <string>Y</string>
-             </property>
-             <property name="icon">
-              <iconset theme="go-down"/>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="2">
-            <widget class="QPushButton" name="pushButton_stage_moveToHomeZ">
-             <property name="text">
-              <string>Z</string>
-             </property>
-             <property name="icon">
-              <iconset theme="go-home"/>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="2">
-            <widget class="QPushButton" name="pushButton_stage_jogX">
-             <property name="text">
-              <string>X</string>
-             </property>
-             <property name="icon">
-              <iconset theme="go-next"/>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBox_7">
-          <property name="title">
-           <string>Jog Step</string>
-          </property>
-          <layout class="QFormLayout" name="formLayout">
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_6">
-             <property name="text">
-              <string>Rotation (deg)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_8">
-             <property name="text">
-              <string>XY (mm)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_9">
-             <property name="text">
-              <string>Z (mm)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_rot_jogstep_mm">
-             <property name="value">
-              <double>5.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_xy_jogstep_mm">
-             <property name="decimals">
-              <number>3</number>
-             </property>
-             <property name="maximum">
-              <double>10.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>1.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_z_jogstep_mm">
-             <property name="decimals">
-              <number>3</number>
-             </property>
-             <property name="minimum">
-              <double>0.000000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>10.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>1.000000000000000</double>
-             </property>
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="1" column="1">
+               <widget class="QPushButton" name="pushButton_pliRot_topJogReverse">
+                <property name="text">
+                 <string>θ</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="go-previous"/>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QPushButton" name="pushButton_pliRot_topJog">
+                <property name="text">
+                 <string>θ</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="go-next"/>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="2">
+               <widget class="QPushButton" name="pushButton_pliRot_bottomJog">
+                <property name="text">
+                 <string>φ</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="QIcon::ThemeIcon::GoNext"/>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QPushButton" name="pushButton_pliRot_home">
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset theme="QIcon::ThemeIcon::GoHome"/>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QPushButton" name="pushButton_pliRot_bottomJogReverse">
+                <property name="text">
+                 <string>φ</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="QIcon::ThemeIcon::GoPrevious"/>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_4">
+                <property name="text">
+                 <string>Top</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_10">
+                <property name="text">
+                 <string>Bottom</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="label_6">
+                <property name="text">
+                 <string>Step deg)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QDoubleSpinBox" name="doubleSpinBox_rot_jogstep_deg">
+                <property name="value">
+                 <double>5.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QCheckBox" name="checkBox_linkTopBottomRot">
+                <property name="text">
+                 <string>Link top / bot</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_stage_abort">
+         <widget class="QPushButton" name="pushButton_stage_stop">
           <property name="toolTip">
            <string>Abort all moves</string>
           </property>
           <property name="text">
-           <string>Abort</string>
+           <string>Stop</string>
           </property>
           <property name="icon">
            <iconset theme="dialog-warning"/>
@@ -413,6 +490,15 @@
        <attribute name="title">
         <string>Camera</string>
        </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="QPushButton" name="pushButton_camera_acquire">
+          <property name="text">
+           <string>Acquire</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="pliTab">
        <attribute name="title">
@@ -440,7 +526,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>33</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -535,27 +621,6 @@
    </property>
   </action>
  </widget>
- <tabstops>
-  <tabstop>checkBox</tabstop>
-  <tabstop>pushButton_pliRot_topJogReverse</tabstop>
-  <tabstop>pushButton_16</tabstop>
-  <tabstop>pushButton_pliRot_topJog</tabstop>
-  <tabstop>pushButton_</tabstop>
-  <tabstop>pushButton_15</tabstop>
-  <tabstop>pushButton_10</tabstop>
-  <tabstop>pushButton_stage_moveToHomeX</tabstop>
-  <tabstop>pushButton_stage_jogY</tabstop>
-  <tabstop>pushButton_stage_moveToHomeY</tabstop>
-  <tabstop>pushButton_stage_jogZ</tabstop>
-  <tabstop>pushButton_stage_jogXReverse</tabstop>
-  <tabstop>pushButton_stage_jogX</tabstop>
-  <tabstop>pushButton_stage_moveToHomeXYZ</tabstop>
-  <tabstop>pushButton_stage_jogYReverse</tabstop>
-  <tabstop>pushButton_stage_moveToHomeZ</tabstop>
-  <tabstop>pushButton_stage_jogZReverse</tabstop>
-  <tabstop>pushButton_stage_abort</tabstop>
-  <tabstop>tabWidget</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>
