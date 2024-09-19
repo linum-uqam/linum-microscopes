@@ -13,7 +13,7 @@ from pathlib import Path
 import time
 
 
-from linum_microscopes.controllers import pcoCamera
+#from linum_microscopes.controllers import pcoCamera
 from linum_microscopes.controllers import pdvStage
 
 # TODO: put the camera capture in a different thread to avoid freezing the GUI
@@ -379,7 +379,8 @@ class MainWindow(QMainWindow):
 
     def acquire_image(self):
         logging.info("Acquiring an image")
-        img = pcoCamera.acquire_single_image()
+        #img = pcoCamera.acquire_single_image()
+        img = np.random.random((100,100))
         self.update_view(img)
         self.acquisitionStatus = True
         self.timer.start()
