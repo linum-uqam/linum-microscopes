@@ -5,6 +5,10 @@ y_axis_travel = 150.0 # mm
 z_axis_travel = 60.0 # mm, https://www.pdvcn.com/motorized-lab-jack/electric-lifting-platform,-motorized-lab-jack,-elevator,-optical-sliding-lift-pt-gd401.html
 homing_direction = 7 # XYZmask, int(0b111)
 axis_direction = 0 # XYZmask, int(0b000)
+x_axis_max_position = 70.0 # Adding 2 for the homing shift
+y_axis_max_position = 82.0 # Adding 2 for the homing shift
+position_sample_center = [4.0, 46.0]
+position_vibratome = [56, 55]
 
 [pli-stage-xyz]
 com_port = "COM13"
@@ -14,6 +18,7 @@ z_axis_travel = 110.0 # mm
 homing_direction = 7 # XYZmask, int(0b111) ZYX
 axis_direction = 5 # XYZmask, int(0b101)
 z_step_for_1mm = 340 # $102, number of z-steps to move 1 mm.
+
 
 [pli-stage-rot]
 com_port = "COM12"
