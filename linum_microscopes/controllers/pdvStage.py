@@ -197,10 +197,14 @@ class PDVStageController:
         """
         if "x_axis_travel" in settings:
             self.send_command(f"$130={settings['x_axis_travel']}")
+        if "x_axis_max_position" in settings:
+            self.send_command(f"$130={settings['x_axis_max_position']}")
         if "top_rotation_travel" in settings:
             self.send_command(f"$130={settings['top_rotation_travel']}")
         if "y_axis_travel" in settings:
             self.send_command(f"$131={settings['y_axis_travel']}")
+        if "y_axis_max_position" in settings:
+            self.send_command(f"$131={settings['y_axis_max_position']}")
         if "bottom_rotation_travel" in settings:
             self.send_command(f"$131={settings['bottom_rotation_travel']}")
         if "z_axis_travel" in settings:
@@ -284,7 +288,7 @@ class PDVStageController:
         assert x is not None or y is not None or z is not None, "At least one of x, y, z or speed must be set"
 
         # Preparing the gcode
-        gcode = []
+        gcode = ['G90'] # Absolute move
 
         # Adding target position
         if x is not None:
