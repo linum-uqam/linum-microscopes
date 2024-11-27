@@ -15,6 +15,7 @@ import time
 
 #from linum_microscopes.controllers import pcoCamera
 from linum_microscopes.controllers import pdvStage
+from linum_microscopes.controllers import function_generator_jds6600
 
 # TODO: put the camera capture in a different thread to avoid freezing the GUI
 # TODO: problem with the z range for the PLI
@@ -205,6 +206,7 @@ class MainWindow(QMainWindow):
         # Signal and Slots
         self.ui.actionS_OCT_Serial_OCT.triggered.connect(self.set_microscope_as_soct)
         self.ui.actionPLI_Polarized_Light_Imaging.triggered.connect(self.set_microscope_as_pli)
+        self.ui.actionVibratome.triggered.connect(self.set_microscope_as_vibratome)
 
         # Stage XYZ job control
         self.ui.pushButton_stage_jogX.clicked.connect(self.jog_x)
@@ -310,6 +312,65 @@ class MainWindow(QMainWindow):
         self.thread_stagexyz.start()
 
 
+    def set_microscope_as_vibratome(self):
+        logging.info("Setting the microscope as vibratome.")
+
+        # update the controllers display
+        self.ui.groupBox_stageXYZ.show()
+        self.ui.groupBox_stageRot.hide()
+        self.ui.pliTab.setEnabled(False)
+        self.ui.CameraTab.setEnabled(False)
+        self.ui.vibratomeTab.show()
+        self.ui.groupBox_viewer.hide()
+
+        # Create a vibratome controller
+        self.flag_vibratome = False
+        self.vibratome = function_generator_jds6600.FunctionGeneratorJDS6600()
+        self.ui.pushButton_vibratome.clicked.connect(self.start_stop_vibratome)
+
+        # Initialize the values
+        frequency, unit = self.vibratome.get_frequency()
+        amplitude = self.vibratome.get_amplitude() * 2
+        self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.setValue(frequency)
+        self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.setValue(amplitude)
+
+        # Connect signals and slots
+        self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.valueChanged.connect(self.vibratome_update_frequency)
+        self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.valueChanged.connect(self.vibratome_update_amplitude)
+
+
+    def start_stop_vibratome(self):
+        if self.flag_vibratome:
+            self.vibratome.disable()
+            self.flag_vibratome = False
+            self.ui.pushButton_vibratome.setText("Start blade")
+        else:
+            self.vibratome.enable()
+            self.flag_vibratome = True
+            self.ui.pushButton_vibratome.setText("Stop blade")
+
+        self.update_vibratome_status()
+
+    def vibratome_update_frequency(self):
+        frequency = self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.value()
+        msg = f"Setting blade frequency to {frequency} Hz"
+        logging.info(msg)
+        self.ui.statusbar.showMessage(msg, timeout=5000)
+        self.vibratome.set_frequency(frequency)
+
+    def vibratome_update_amplitude(self):
+        amplitude = self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.value() / 2
+        msg = f"Setting amplitude to {amplitude} V"
+        logging.info(msg)
+        self.ui.statusbar.showMessage(msg, timeout=5000)
+        self.vibratome.set_amplitude(amplitude)
+
+    def update_vibratome_status(self):
+        if self.flag_vibratome:
+            status_msg = "Vibrating"
+        else:
+            status_msg = "Idle"
+        self.ui.pushButton_vibratomeStatus.setText(status_msg)
 
 
     def jog_x(self):
