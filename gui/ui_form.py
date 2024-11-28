@@ -358,11 +358,6 @@ class Ui_MainWindow(object):
 
         self.formLayout_4.setWidget(3, QFormLayout.LabelRole, self.label_19)
 
-        self.label_16 = QLabel(self.groupBox_vibratomeInfo)
-        self.label_16.setObjectName(u"label_16")
-
-        self.formLayout_4.setWidget(4, QFormLayout.LabelRole, self.label_16)
-
         self.label_20 = QLabel(self.groupBox_vibratomeInfo)
         self.label_20.setObjectName(u"label_20")
 
@@ -375,27 +370,24 @@ class Ui_MainWindow(object):
 
         self.lineEdit_vibratome_cuttingHeight_mm = QLineEdit(self.groupBox_vibratomeInfo)
         self.lineEdit_vibratome_cuttingHeight_mm.setObjectName(u"lineEdit_vibratome_cuttingHeight_mm")
-        self.lineEdit_vibratome_cuttingHeight_mm.setEnabled(False)
+        self.lineEdit_vibratome_cuttingHeight_mm.setEnabled(True)
+        self.lineEdit_vibratome_cuttingHeight_mm.setReadOnly(True)
 
         self.formLayout_4.setWidget(1, QFormLayout.FieldRole, self.lineEdit_vibratome_cuttingHeight_mm)
 
         self.lineEdit_vibratome_previousCut_mm = QLineEdit(self.groupBox_vibratomeInfo)
         self.lineEdit_vibratome_previousCut_mm.setObjectName(u"lineEdit_vibratome_previousCut_mm")
-        self.lineEdit_vibratome_previousCut_mm.setEnabled(False)
+        self.lineEdit_vibratome_previousCut_mm.setEnabled(True)
+        self.lineEdit_vibratome_previousCut_mm.setReadOnly(True)
 
         self.formLayout_4.setWidget(2, QFormLayout.FieldRole, self.lineEdit_vibratome_previousCut_mm)
 
         self.lineEdit_vibratome_nextCut_mm = QLineEdit(self.groupBox_vibratomeInfo)
         self.lineEdit_vibratome_nextCut_mm.setObjectName(u"lineEdit_vibratome_nextCut_mm")
-        self.lineEdit_vibratome_nextCut_mm.setEnabled(False)
+        self.lineEdit_vibratome_nextCut_mm.setEnabled(True)
+        self.lineEdit_vibratome_nextCut_mm.setReadOnly(True)
 
         self.formLayout_4.setWidget(3, QFormLayout.FieldRole, self.lineEdit_vibratome_nextCut_mm)
-
-        self.lineEdit_vibratome_totalCuttingDistance_mm = QLineEdit(self.groupBox_vibratomeInfo)
-        self.lineEdit_vibratome_totalCuttingDistance_mm.setObjectName(u"lineEdit_vibratome_totalCuttingDistance_mm")
-        self.lineEdit_vibratome_totalCuttingDistance_mm.setEnabled(False)
-
-        self.formLayout_4.setWidget(4, QFormLayout.FieldRole, self.lineEdit_vibratome_totalCuttingDistance_mm)
 
         self.pushButton_vibratomeStatus = QPushButton(self.groupBox_vibratomeInfo)
         self.pushButton_vibratomeStatus.setObjectName(u"pushButton_vibratomeStatus")
@@ -443,7 +435,7 @@ class Ui_MainWindow(object):
 
         self.doubleSpinBox_vibratomeSliceThicknessMm = QDoubleSpinBox(self.groupBox_vibratomeParameters)
         self.doubleSpinBox_vibratomeSliceThicknessMm.setObjectName(u"doubleSpinBox_vibratomeSliceThicknessMm")
-        self.doubleSpinBox_vibratomeSliceThicknessMm.setEnabled(False)
+        self.doubleSpinBox_vibratomeSliceThicknessMm.setEnabled(True)
         self.doubleSpinBox_vibratomeSliceThicknessMm.setDecimals(3)
 
         self.formLayout_5.setWidget(2, QFormLayout.FieldRole, self.doubleSpinBox_vibratomeSliceThicknessMm)
@@ -455,7 +447,7 @@ class Ui_MainWindow(object):
 
         self.doubleSpinBox_vibratomeCuttingLengthMm = QDoubleSpinBox(self.groupBox_vibratomeParameters)
         self.doubleSpinBox_vibratomeCuttingLengthMm.setObjectName(u"doubleSpinBox_vibratomeCuttingLengthMm")
-        self.doubleSpinBox_vibratomeCuttingLengthMm.setEnabled(False)
+        self.doubleSpinBox_vibratomeCuttingLengthMm.setEnabled(True)
 
         self.formLayout_5.setWidget(3, QFormLayout.FieldRole, self.doubleSpinBox_vibratomeCuttingLengthMm)
 
@@ -466,7 +458,7 @@ class Ui_MainWindow(object):
 
         self.doubleSpinBox_vibratomeFeedingRate_mms = QDoubleSpinBox(self.groupBox_vibratomeParameters)
         self.doubleSpinBox_vibratomeFeedingRate_mms.setObjectName(u"doubleSpinBox_vibratomeFeedingRate_mms")
-        self.doubleSpinBox_vibratomeFeedingRate_mms.setEnabled(False)
+        self.doubleSpinBox_vibratomeFeedingRate_mms.setEnabled(True)
 
         self.formLayout_5.setWidget(4, QFormLayout.FieldRole, self.doubleSpinBox_vibratomeFeedingRate_mms)
 
@@ -477,7 +469,7 @@ class Ui_MainWindow(object):
 
         self.spinBox_vibratome_nSlices = QSpinBox(self.groupBox_vibratomeParameters)
         self.spinBox_vibratome_nSlices.setObjectName(u"spinBox_vibratome_nSlices")
-        self.spinBox_vibratome_nSlices.setEnabled(False)
+        self.spinBox_vibratome_nSlices.setEnabled(True)
         self.spinBox_vibratome_nSlices.setMinimum(1)
         self.spinBox_vibratome_nSlices.setMaximum(10)
 
@@ -492,7 +484,7 @@ class Ui_MainWindow(object):
         self.comboBox_vibratomePause.addItem("")
         self.comboBox_vibratomePause.addItem("")
         self.comboBox_vibratomePause.setObjectName(u"comboBox_vibratomePause")
-        self.comboBox_vibratomePause.setEnabled(False)
+        self.comboBox_vibratomePause.setEnabled(True)
 
         self.formLayout_5.setWidget(7, QFormLayout.FieldRole, self.comboBox_vibratomePause)
 
@@ -503,10 +495,22 @@ class Ui_MainWindow(object):
 
         self.doubleSpinBox_vibratome_zStep_mm = QDoubleSpinBox(self.groupBox_vibratomeParameters)
         self.doubleSpinBox_vibratome_zStep_mm.setObjectName(u"doubleSpinBox_vibratome_zStep_mm")
-        self.doubleSpinBox_vibratome_zStep_mm.setEnabled(False)
+        self.doubleSpinBox_vibratome_zStep_mm.setEnabled(True)
         self.doubleSpinBox_vibratome_zStep_mm.setDecimals(3)
+        self.doubleSpinBox_vibratome_zStep_mm.setValue(1.000000000000000)
 
         self.formLayout_5.setWidget(8, QFormLayout.FieldRole, self.doubleSpinBox_vibratome_zStep_mm)
+
+        self.label_16 = QLabel(self.groupBox_vibratomeParameters)
+        self.label_16.setObjectName(u"label_16")
+
+        self.formLayout_5.setWidget(6, QFormLayout.LabelRole, self.label_16)
+
+        self.lineEdit_vibratome_totalCuttingDistance_mm = QLineEdit(self.groupBox_vibratomeParameters)
+        self.lineEdit_vibratome_totalCuttingDistance_mm.setObjectName(u"lineEdit_vibratome_totalCuttingDistance_mm")
+        self.lineEdit_vibratome_totalCuttingDistance_mm.setEnabled(False)
+
+        self.formLayout_5.setWidget(6, QFormLayout.FieldRole, self.lineEdit_vibratome_totalCuttingDistance_mm)
 
 
         self.verticalLayout_6.addWidget(self.groupBox_vibratomeParameters)
@@ -517,40 +521,54 @@ class Ui_MainWindow(object):
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.pushButton_vibratome_jogZ_up = QPushButton(self.groupBox_vibratomeControls)
         self.pushButton_vibratome_jogZ_up.setObjectName(u"pushButton_vibratome_jogZ_up")
-        self.pushButton_vibratome_jogZ_up.setEnabled(False)
+        self.pushButton_vibratome_jogZ_up.setEnabled(True)
         self.pushButton_vibratome_jogZ_up.setIcon(icon1)
 
-        self.gridLayout_2.addWidget(self.pushButton_vibratome_jogZ_up, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.pushButton_vibratome_jogZ_up, 1, 0, 1, 1)
 
         self.pushButton_vibratome_stageGotoVibratome = QPushButton(self.groupBox_vibratomeControls)
         self.pushButton_vibratome_stageGotoVibratome.setObjectName(u"pushButton_vibratome_stageGotoVibratome")
         self.pushButton_vibratome_stageGotoVibratome.setEnabled(False)
 
-        self.gridLayout_2.addWidget(self.pushButton_vibratome_stageGotoVibratome, 3, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.pushButton_vibratome_stageGotoVibratome, 4, 0, 1, 1)
 
         self.pushButton_vibratome = QPushButton(self.groupBox_vibratomeControls)
         self.pushButton_vibratome.setObjectName(u"pushButton_vibratome")
+        self.pushButton_vibratome.setEnabled(False)
+        icon9 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.MediaPlaybackStart))
+        self.pushButton_vibratome.setIcon(icon9)
+        self.pushButton_vibratome.setCheckable(True)
 
-        self.gridLayout_2.addWidget(self.pushButton_vibratome, 4, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.pushButton_vibratome, 5, 0, 1, 1)
 
         self.pushButton_vibratomeAbort = QPushButton(self.groupBox_vibratomeControls)
         self.pushButton_vibratomeAbort.setObjectName(u"pushButton_vibratomeAbort")
         self.pushButton_vibratomeAbort.setEnabled(False)
 
-        self.gridLayout_2.addWidget(self.pushButton_vibratomeAbort, 6, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.pushButton_vibratomeAbort, 7, 0, 1, 1)
 
         self.pushButton_vibratome_jogZ_down = QPushButton(self.groupBox_vibratomeControls)
         self.pushButton_vibratome_jogZ_down.setObjectName(u"pushButton_vibratome_jogZ_down")
-        self.pushButton_vibratome_jogZ_down.setEnabled(False)
+        self.pushButton_vibratome_jogZ_down.setEnabled(True)
         self.pushButton_vibratome_jogZ_down.setIcon(icon3)
 
-        self.gridLayout_2.addWidget(self.pushButton_vibratome_jogZ_down, 1, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.pushButton_vibratome_jogZ_down, 2, 0, 1, 1)
 
         self.pushButton_vibratomeCut = QPushButton(self.groupBox_vibratomeControls)
         self.pushButton_vibratomeCut.setObjectName(u"pushButton_vibratomeCut")
         self.pushButton_vibratomeCut.setEnabled(False)
 
-        self.gridLayout_2.addWidget(self.pushButton_vibratomeCut, 5, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.pushButton_vibratomeCut, 6, 0, 1, 1)
+
+        self.pushButton_vibratomeArm = QPushButton(self.groupBox_vibratomeControls)
+        self.pushButton_vibratomeArm.setObjectName(u"pushButton_vibratomeArm")
+        icon10 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
+        self.pushButton_vibratomeArm.setIcon(icon10)
+        self.pushButton_vibratomeArm.setCheckable(True)
+        self.pushButton_vibratomeArm.setAutoDefault(False)
+        self.pushButton_vibratomeArm.setFlat(False)
+
+        self.gridLayout_2.addWidget(self.pushButton_vibratomeArm, 0, 0, 1, 1)
 
 
         self.verticalLayout_6.addWidget(self.groupBox_vibratomeControls)
@@ -604,6 +622,7 @@ class Ui_MainWindow(object):
 
         self.tabWidget.setCurrentIndex(3)
         self.comboBox_vibratomePause.setCurrentIndex(1)
+        self.pushButton_vibratomeArm.setDefault(False)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -662,13 +681,11 @@ class Ui_MainWindow(object):
         self.groupBox_vibratomeInfo.setTitle(QCoreApplication.translate("MainWindow", u"Info", None))
         self.label_18.setText(QCoreApplication.translate("MainWindow", u"Previous cut (mm)", None))
         self.label_19.setText(QCoreApplication.translate("MainWindow", u"Next cut (mm)", None))
-        self.label_16.setText(QCoreApplication.translate("MainWindow", u"Total cutting distance (mm)", None))
         self.label_20.setText(QCoreApplication.translate("MainWindow", u"Current height (mm)", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Status", None))
         self.lineEdit_vibratome_cuttingHeight_mm.setText(QCoreApplication.translate("MainWindow", u"0.000", None))
         self.lineEdit_vibratome_previousCut_mm.setText(QCoreApplication.translate("MainWindow", u"0.000", None))
         self.lineEdit_vibratome_nextCut_mm.setText(QCoreApplication.translate("MainWindow", u"0.000", None))
-        self.lineEdit_vibratome_totalCuttingDistance_mm.setText(QCoreApplication.translate("MainWindow", u"0.000", None))
         self.pushButton_vibratomeStatus.setText(QCoreApplication.translate("MainWindow", u"Status", None))
         self.groupBox_vibratomeParameters.setTitle(QCoreApplication.translate("MainWindow", u"Parameters", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"Blade Frequency (Hz)", None))
@@ -682,6 +699,8 @@ class Ui_MainWindow(object):
         self.comboBox_vibratomePause.setItemText(1, QCoreApplication.translate("MainWindow", u"No", None))
 
         self.label_21.setText(QCoreApplication.translate("MainWindow", u"Z Step (mm)", None))
+        self.label_16.setText(QCoreApplication.translate("MainWindow", u"Cutting thickness (mm)", None))
+        self.lineEdit_vibratome_totalCuttingDistance_mm.setText(QCoreApplication.translate("MainWindow", u"0.000", None))
         self.groupBox_vibratomeControls.setTitle(QCoreApplication.translate("MainWindow", u"Controls", None))
         self.pushButton_vibratome_jogZ_up.setText(QCoreApplication.translate("MainWindow", u"Z", None))
         self.pushButton_vibratome_stageGotoVibratome.setText(QCoreApplication.translate("MainWindow", u"Go to vibratome", None))
@@ -689,6 +708,7 @@ class Ui_MainWindow(object):
         self.pushButton_vibratomeAbort.setText(QCoreApplication.translate("MainWindow", u"Abort", None))
         self.pushButton_vibratome_jogZ_down.setText(QCoreApplication.translate("MainWindow", u"Z", None))
         self.pushButton_vibratomeCut.setText(QCoreApplication.translate("MainWindow", u"Cut", None))
+        self.pushButton_vibratomeArm.setText(QCoreApplication.translate("MainWindow", u"Arm", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.vibratomeTab), QCoreApplication.translate("MainWindow", u"Vibratome", None))
         self.groupBox_viewer.setTitle(QCoreApplication.translate("MainWindow", u"Viewer", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))

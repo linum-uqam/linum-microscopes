@@ -26,3 +26,18 @@ top_rotation_travel = 335
 bottom_rotation_travel = 180.0 # degrees
 homing_direction = 3 #3,  XYZmask, int(0b011)
 axis_direction = 3 #3,  XYZmask, int(0b011)
+
+[vibratome]
+com_port = 'COM8'
+cutting_frequency = 30  # Hz.
+cutting_amplitude = 5.0 # V
+min_frequency = 30 # HZ
+max_frequency = 200 # Hz
+feeding_rate = 1.0  # aka cutting speed, mm/s
+cutting_distance = 36.0  # mm, in the negative y direction
+slice_thickness = 0.2  # mm
+
+
+
+
+

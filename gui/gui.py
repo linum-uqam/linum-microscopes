@@ -16,6 +16,7 @@ import time
 #from linum_microscopes.controllers import pcoCamera
 from linum_microscopes.controllers import pdvStage
 from linum_microscopes.controllers import function_generator_jds6600
+from linum_microscopes.config import config
 
 # TODO: put the camera capture in a different thread to avoid freezing the GUI
 # TODO: problem with the z range for the PLI
@@ -174,6 +175,7 @@ class StageXYZThread(QThread):
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.config = config
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.init_ui()
@@ -181,6 +183,7 @@ class MainWindow(QMainWindow):
         self.init_viewer()
         self.update_view()
         self.stage_xyz = None
+
 
         # Prepare the camera timer
         self.acquisitionStatus = False
@@ -222,6 +225,8 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_vibratome_jogZ_down.clicked.connect(self.reverse_jogz)
         self.ui.pushButton_stage_moveToHomeXYZ.clicked.connect(self.homing_xyz)
         self.ui.pushButton_stage_stop.clicked.connect(self.stop_moves)
+        self.ui.doubleSpinBox_z_jogstep_mm.valueChanged.connect(self.update_z_jogstep)
+        self.ui.doubleSpinBox_vibratome_zStep_mm.valueChanged.connect(self.update_z_jogstep_vibratome)
 
         # Rotation stage action
         self.ui.pushButton_pliRot_topJog.clicked.connect(self.jog_top_rot)
@@ -236,6 +241,17 @@ class MainWindow(QMainWindow):
         # Hide some panels if not used
         self.ui.groupBox_stageXYZ.hide()
         self.ui.groupBox_stageRot.hide()
+
+        # Vibratome Signal/Slots
+        self.ui.spinBox_vibratome_nSlices.valueChanged.connect(self.update_slicing_parameters)
+
+        # Setup vibratome settings
+        self.ui.doubleSpinBox_vibratomeCuttingLengthMm.setValue(self.config['vibratome']['cutting_distance'])
+        self.ui.doubleSpinBox_vibratomeFeedingRate_mms.setValue(self.config['vibratome']['feeding_rate'])
+        self.ui.doubleSpinBox_vibratomeSliceThicknessMm.setValue(self.config['vibratome']['slice_thickness'])
+        self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.setValue(self.config['vibratome']['cutting_frequency'])
+        self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.setValue(self.config['vibratome']['cutting_amplitude'])
+        self.update_slicing_parameters()
 
     def init_viewer(self):
         # Initialize the image viewer
@@ -253,6 +269,10 @@ class MainWindow(QMainWindow):
         # Add a color bar
         self.colorbarItem = pg.ColorBarItem(colorMap="magma", limits=(0, 1), rounding=0.001)
         self.colorbarItem.setImageItem(self.imageItem, insert_in=self.viewer)
+
+    def update_status_and_log(self, msg, timeout:int = 5000):
+        logging.info(msg)
+        self.ui.statusbar.showMessage(msg, timeout=timeout)
 
     def update_image(self, image):
         self.image = image
@@ -273,8 +293,24 @@ class MainWindow(QMainWindow):
         self.ui.lcdNumber_rotTop.display(rot_top)
         self.ui.lcdNumber_rotBottom.display(rot_bottom)
 
+    def update_z_jogstep(self):
+        jog_step = self.ui.doubleSpinBox_z_jogstep_mm.value()
+        self.ui.doubleSpinBox_vibratome_zStep_mm.setValue(jog_step)
+
+    def update_z_jogstep_vibratome(self):
+        jog_step = self.ui.doubleSpinBox_vibratome_zStep_mm.value()
+        self.ui.doubleSpinBox_z_jogstep_mm.setValue(jog_step)
+
+    def update_slicing_parameters(self):
+        print("Updating the slicing parameters")
+        n_slices = self.ui.spinBox_vibratome_nSlices.value()
+        slice_thickness = self.ui.doubleSpinBox_vibratomeSliceThicknessMm.value()
+        total_thickness = n_slices * slice_thickness
+        self.ui.lineEdit_vibratome_totalCuttingDistance_mm.setText(f"{total_thickness:.3f}")
+
     def set_microscope_as_soct(self):
-        logging.info("Setting the microscope as soct.")
+
+        self.update_status_and_log("Setting the microscope as soct.")
 
         # Display the XYZ Stage Control
         self.ui.groupBox_stageXYZ.show()
@@ -297,7 +333,7 @@ class MainWindow(QMainWindow):
         #self.ui.
 
     def set_microscope_as_pli(self):
-        logging.info("Setting the microscope as PLI.")
+        self.update_status_and_log("Setting the microscope as PLI.")
 
         # Update the controllers display
         self.ui.groupBox_stageXYZ.show()
@@ -319,7 +355,7 @@ class MainWindow(QMainWindow):
 
 
     def set_microscope_as_vibratome(self):
-        logging.info("Setting the microscope as vibratome.")
+        self.update_status_and_log("Setting the microscope as vibratome.")
 
         # update the controllers display
         self.ui.groupBox_stageXYZ.show()
@@ -361,10 +397,12 @@ class MainWindow(QMainWindow):
         # Get the button state
         isChecked = self.ui.pushButton_vibratomeArm.isChecked()
         if isChecked:
+            self.update_status_and_log("Arming the vibratome.")
             self.vibratome.arm()
             self.ui.pushButton_vibratomeArm.setText("Unarm")
             self.ui.pushButton_vibratome.setEnabled(True)
         else:
+            self.update_status_and_log("Unarming the vibratome.")
             self.vibratome.unarm()
             self.ui.pushButton_vibratomeArm.setText("Arm")
             if self.ui.pushButton_vibratome.isChecked():
@@ -372,32 +410,31 @@ class MainWindow(QMainWindow):
             self.ui.pushButton_vibratome.setEnabled(False)
 
     def start_stop_vibratome(self):
-        if self.flag_vibratome:
-            self.vibratome.stop_blade()
-            self.flag_vibratome = False
-            self.ui.pushButton_vibratome.setText("Start blade")
-            self.ui.pushButton_vibratome.setIcon(QIcon.fromTheme(QIcon.ThemeIcon.MediaPlaybackStart))
-        else:
+        if self.ui.pushButton_vibratome.isChecked():
+            self.update_status_and_log("Starting the vibratome.")
             self.vibratome.start_blade()
-            self.flag_vibratome = True
             self.ui.pushButton_vibratome.setText("Stop blade")
             self.ui.pushButton_vibratome.setIcon(QIcon.fromTheme(QIcon.ThemeIcon.MediaPlaybackStop))
+        else:
+            self.update_status_and_log("Stopping the vibratome.")
+            self.vibratome.stop_blade()
+            self.ui.pushButton_vibratome.setText("Start blade")
+            self.ui.pushButton_vibratome.setIcon(QIcon.fromTheme(QIcon.ThemeIcon.MediaPlaybackStart))
+
 
         self.update_vibratome_status()
 
     def vibratome_update_frequency(self):
         frequency = self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.value()
         msg = f"Setting blade frequency to {frequency} Hz"
-        logging.info(msg)
-        self.ui.statusbar.showMessage(msg, timeout=5000)
+        self.update_status_and_log(msg)
         self.vibratome.set_frequency(frequency, channel=1)
         self.vibratome.set_frequency(frequency, channel=2)
 
     def vibratome_update_amplitude(self):
         amplitude = self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.value() / 2
         msg = f"Setting amplitude to {amplitude} V"
-        logging.info(msg)
-        self.ui.statusbar.showMessage(msg, timeout=5000)
+        self.update_status_and_log(msg)
         self.vibratome.set_amplitude(amplitude)
 
     def update_vibratome_status(self):
@@ -474,7 +511,7 @@ class MainWindow(QMainWindow):
             self.stage_rot.stop()
 
     def acquire_image(self):
-        logging.info("Acquiring an image")
+        self.update_status_and_log("Acquiring an image")
         #img = pcoCamera.acquire_single_image()
         img = np.random.random((100,100))
         self.update_view(img)
