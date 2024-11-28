@@ -14,8 +14,6 @@ import serial
 # TODO: Set the default signal when starting the generator
 # TODO: convert the EN undocumented commands (see the chinese doc)
 # TODO: add property to know if the vibratome is running
-# TODO: modify the electronics to put the controller in idle mode when not used.
-
 
 SERIAL_PORT = "COM8"
 AVAILABLE_WAVEFORMS = ['sine', 'square', 'pulse', 'triangular', 'partial_sine', 'CMOS', 'dc',
@@ -55,7 +53,23 @@ class FunctionGeneratorJDS6600:
         response = self.serial.readline().strip().decode("utf-8")
         return response
 
-    def set_waveform(self, waveform: str):
+    def arm(self):
+        """Arm the vibratome"""
+        self.set_waveform("pulse", channel=2)
+        self.set_frequency(1.0, channel=2)
+        self.set_amplitude(5.0, channel=2)
+        self.set_duty_cycle(100, channel=2)
+        self.enable(channel_1=False, channel_2=True)
+
+    def unarm(self):
+        """Unarm the vibratome"""
+        self.set_waveform("pulse", channel=2)
+        self.set_frequency(1.0, channel=2)
+        self.set_amplitude(5.0, channel=2)
+        self.set_duty_cycle(0, channel=2)
+        self.enable(channel_1=False, channel_2=True)
+
+    def set_waveform(self, waveform: str, channel: int = 1):
         """Set the waveform of the function generator.
         Parameters
         ----------
@@ -76,12 +90,19 @@ class FunctionGeneratorJDS6600:
             - 'multi-tone'
             - 'sinc'
             - 'lorenz'
+        channel : int
+            The channel to set the waveform to.
         """
         # TODO: add option for arbitrary waveform between 101 to 160
         assert waveform in AVAILABLE_WAVEFORMS, f"Waveform {waveform} not available. Available waveforms: {AVAILABLE_WAVEFORMS}"
+        assert channel in [1, 2], f"Channel {channel} not available. Available channels: {[1, 2]}"
 
         # Prepare the command
-        command = f":w21={AVAILABLE_WAVEFORMS.index(waveform)}.\r\n"
+        if channel == 1:
+            channel_code = 21
+        else:
+            channel_code = 22
+        command = f":w{channel_code}={AVAILABLE_WAVEFORMS.index(waveform)}.\r\n"
         response = self.write_command(command)
         assert response == ":ok", "Something went wrong!"
 
@@ -89,8 +110,13 @@ class FunctionGeneratorJDS6600:
         command = ":r21=."
         response = self.write_command(command)
         response = response.replace(":r21=", "").strip(".\r\n")
-        waveform = AVAILABLE_WAVEFORMS[int(response)]
-        return waveform
+        waveform_ch1 = AVAILABLE_WAVEFORMS[int(response)]
+        command = ":r22=."
+        response = self.write_command(command)
+        response = response.replace(":r22=", "").strip(".\r\n")
+        waveform_ch2 = AVAILABLE_WAVEFORMS[int(response)]
+
+        return waveform_ch1, waveform_ch2
 
     def set_frequency(self, frequency: float, channel: int = 1, unit: str = "Hz"):
         """Set the frequency of the function generator.
@@ -111,7 +137,7 @@ class FunctionGeneratorJDS6600:
         command = ""
         if channel == 1:
             command += ":w23="
-        elif command == 2:
+        else:
             command += ":w24="
 
         # Add the frequency and the unit
@@ -189,7 +215,7 @@ class FunctionGeneratorJDS6600:
         command = ""
         if channel == 1:
             command += ":w25="
-        elif command == 2:
+        else:
             command += ":w26="
 
         # Add the value
