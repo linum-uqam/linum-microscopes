@@ -33,6 +33,7 @@ class FunctionGeneratorJDS6600:
         )
 
     def __del__(self):
+        self.unarm()
         self.serial.close()
 
     def write_command(self, command: str) -> str:
@@ -56,18 +57,27 @@ class FunctionGeneratorJDS6600:
     def arm(self):
         """Arm the vibratome"""
         self.set_waveform("pulse", channel=2)
-        self.set_frequency(1.0, channel=2)
-        self.set_amplitude(5.0, channel=2)
+        freq, unit = self.get_frequency()
+        self.set_frequency(freq, channel=2)
+        self.set_amplitude(2.5, channel=2)
         self.set_duty_cycle(100, channel=2)
         self.enable(channel_1=False, channel_2=True)
 
     def unarm(self):
         """Unarm the vibratome"""
         self.set_waveform("pulse", channel=2)
-        self.set_frequency(1.0, channel=2)
-        self.set_amplitude(5.0, channel=2)
         self.set_duty_cycle(0, channel=2)
         self.enable(channel_1=False, channel_2=True)
+
+    def start_blade(self, force: bool = False):
+        if force:
+            self.arm()
+        self.enable(channel_1=True, channel_2=True)
+
+    def stop_blade(self, force: bool = False):
+        if force:
+            self.unarm()
+        self.enable(channel_1=False, channel_2=False)
 
     def set_waveform(self, waveform: str, channel: int = 1):
         """Set the waveform of the function generator.

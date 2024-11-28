@@ -7,7 +7,7 @@ import qdarktheme
 from PySide6 import QtCore
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtWidgets import QApplication, QMainWindow
-from PySide6.QtGui import QPixmap, QActionGroup
+from PySide6.QtGui import QPixmap, QActionGroup, QIcon
 import logging
 from pathlib import Path
 import time
@@ -20,6 +20,9 @@ from linum_microscopes.controllers import function_generator_jds6600
 # TODO: put the camera capture in a different thread to avoid freezing the GUI
 # TODO: problem with the z range for the PLI
 # TODO: add tools to set the min-max range in software for the ocnfig (ex: max height for PLI).
+# TODO: disable the software during homing sequence.
+# TODO: prepare the hardware when starting the GUI instead of when choosing the device (available device should be a config thing on every system)
+# TODO: use numpad/joystick to control the stage
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -214,7 +217,9 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_stage_jogY.clicked.connect(self.jog_y)
         self.ui.pushButton_stage_jogYReverse.clicked.connect(self.reverse_jogy)
         self.ui.pushButton_stage_jogZ.clicked.connect(self.jog_z)
+        self.ui.pushButton_vibratome_jogZ_up.clicked.connect(self.jog_z)
         self.ui.pushButton_stage_jogZReverse.clicked.connect(self.reverse_jogz)
+        self.ui.pushButton_vibratome_jogZ_down.clicked.connect(self.reverse_jogz)
         self.ui.pushButton_stage_moveToHomeXYZ.clicked.connect(self.homing_xyz)
         self.ui.pushButton_stage_stop.clicked.connect(self.stop_moves)
 
@@ -262,6 +267,7 @@ class MainWindow(QMainWindow):
         self.ui.lcdNumber_x_mm.display(x)
         self.ui.lcdNumber_y_mm.display(y)
         self.ui.lcdNumber_z_mm.display(z)
+        self.ui.lineEdit_vibratome_cuttingHeight_mm.setText(f"{z:.3f}")
 
     def update_position_rot(self, rot_top, rot_bottom, z):
         self.ui.lcdNumber_rotTop.display(rot_top)
@@ -326,6 +332,7 @@ class MainWindow(QMainWindow):
         # Create a vibratome controller
         self.flag_vibratome = False
         self.vibratome = function_generator_jds6600.FunctionGeneratorJDS6600()
+        self.vibratome.unarm()
         self.ui.pushButton_vibratome.clicked.connect(self.start_stop_vibratome)
 
         # Initialize the values
@@ -337,17 +344,44 @@ class MainWindow(QMainWindow):
         # Connect signals and slots
         self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.valueChanged.connect(self.vibratome_update_frequency)
         self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.valueChanged.connect(self.vibratome_update_amplitude)
+        self.ui.pushButton_vibratomeArm.clicked.connect(self.arm_vibratome)
 
+        # Setup the stage
+        if hasattr(self, "thread_stagexyz"):
+            print("Exiting the thread")
+            self.thread_stagexyz.stop()
+            del self.thread_stagexyz
+
+        self.stage_xyz = pdvStage.SOCTXYZStage()
+        self.thread_stagexyz = StageXYZThread(self.stage_xyz)
+        self.thread_stagexyz.sig_stage_position.connect(self.update_position)
+        self.thread_stagexyz.start()
+
+    def arm_vibratome(self):
+        # Get the button state
+        isChecked = self.ui.pushButton_vibratomeArm.isChecked()
+        if isChecked:
+            self.vibratome.arm()
+            self.ui.pushButton_vibratomeArm.setText("Unarm")
+            self.ui.pushButton_vibratome.setEnabled(True)
+        else:
+            self.vibratome.unarm()
+            self.ui.pushButton_vibratomeArm.setText("Arm")
+            if self.ui.pushButton_vibratome.isChecked():
+                self.ui.pushButton_vibratome.click()
+            self.ui.pushButton_vibratome.setEnabled(False)
 
     def start_stop_vibratome(self):
         if self.flag_vibratome:
-            self.vibratome.disable()
+            self.vibratome.stop_blade()
             self.flag_vibratome = False
             self.ui.pushButton_vibratome.setText("Start blade")
+            self.ui.pushButton_vibratome.setIcon(QIcon.fromTheme(QIcon.ThemeIcon.MediaPlaybackStart))
         else:
-            self.vibratome.enable()
+            self.vibratome.start_blade()
             self.flag_vibratome = True
             self.ui.pushButton_vibratome.setText("Stop blade")
+            self.ui.pushButton_vibratome.setIcon(QIcon.fromTheme(QIcon.ThemeIcon.MediaPlaybackStop))
 
         self.update_vibratome_status()
 
@@ -356,7 +390,8 @@ class MainWindow(QMainWindow):
         msg = f"Setting blade frequency to {frequency} Hz"
         logging.info(msg)
         self.ui.statusbar.showMessage(msg, timeout=5000)
-        self.vibratome.set_frequency(frequency)
+        self.vibratome.set_frequency(frequency, channel=1)
+        self.vibratome.set_frequency(frequency, channel=2)
 
     def vibratome_update_amplitude(self):
         amplitude = self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.value() / 2
