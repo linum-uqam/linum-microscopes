@@ -4,3 +4,4 @@ pyqtgraph
 PyQtDarkTheme
 pyserial
 tomli
+tqdm
