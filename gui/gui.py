@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+import re
 import sys
 
 import numpy as np
@@ -6,7 +7,7 @@ import pyqtgraph as pg
 import qdarktheme
 from PySide6 import QtCore
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 from PySide6.QtGui import QPixmap, QActionGroup, QIcon
 import logging
 from pathlib import Path
@@ -233,6 +234,7 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_stage_stop.clicked.connect(self.stop_moves)
         self.ui.doubleSpinBox_z_jogstep_mm.valueChanged.connect(self.update_z_jogstep)
         self.ui.doubleSpinBox_vibratome_zStep_mm.valueChanged.connect(self.update_z_jogstep_vibratome)
+        self.ui.pushButton_stageXYZ_moveTo.clicked.connect(self.stage_moveto)
 
         # Rotation stage action
         self.ui.pushButton_pliRot_topJog.clicked.connect(self.jog_top_rot)
@@ -248,8 +250,12 @@ class MainWindow(QMainWindow):
         self.ui.groupBox_stageXYZ.hide()
         self.ui.groupBox_stageRot.hide()
 
-        # Vibratome Signal/Slots
-        self.ui.spinBox_vibratome_nSlices.valueChanged.connect(self.update_slicing_parameters)
+        # Vibratome UI initialization
+        self.ui.doubleSpinBox_vibratomeSliceThicknessMm.valueChanged.connect(self.update_vibratome_parameters)
+        self.ui.spinBox_vibratome_nSlices.valueChanged.connect(self.update_vibratome_parameters)
+        self.ui.actionShow_advanded_vibratome_parameters.changed.connect(self.update_vibratome_parameters)
+        self.ui.checkBox_vibratome_firstCutAtCurrentHeight.clicked.connect(self.update_vibratome_parameters)
+        self.ui.progressBar_vibratome_cutting.setValue(0)
 
         # Setup vibratome settings
         self.ui.doubleSpinBox_vibratomeCuttingLengthMm.setValue(self.config['vibratome']['cutting_distance'])
@@ -257,7 +263,7 @@ class MainWindow(QMainWindow):
         self.ui.doubleSpinBox_vibratomeSliceThicknessMm.setValue(self.config['vibratome']['slice_thickness'])
         self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.setValue(self.config['vibratome']['cutting_frequency'])
         self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.setValue(self.config['vibratome']['cutting_amplitude'])
-        self.update_slicing_parameters()
+        self.update_vibratome_parameters()
 
     def init_viewer(self):
         # Initialize the image viewer
@@ -276,14 +282,14 @@ class MainWindow(QMainWindow):
         self.colorbarItem = pg.ColorBarItem(colorMap="magma", limits=(0, 1), rounding=0.001)
         self.colorbarItem.setImageItem(self.imageItem, insert_in=self.viewer)
 
-    def update_status_and_log(self, msg, timeout:int = 5000):
+    def update_status_and_log(self, msg, timeout: int = 5000):
         logging.info(msg)
         self.ui.statusbar.showMessage(msg, timeout=timeout)
 
     def update_image(self, image):
         self.image = image
 
-    def update_view(self, img: np.ndarray=None):
+    def update_view(self, img: np.ndarray = None):
         # Simulate an image
         if img is None:
             img = np.random.rand(100, 100)
@@ -293,7 +299,9 @@ class MainWindow(QMainWindow):
         self.ui.lcdNumber_x_mm.display(x)
         self.ui.lcdNumber_y_mm.display(y)
         self.ui.lcdNumber_z_mm.display(z)
-        self.ui.lineEdit_vibratome_cuttingHeight_mm.setText(f"{z:.3f}")
+        self.ui.lineEdit_vibratome_currentZ_mm.setText(f"{z:.3f}")
+        if self.ui.checkBox_vibratome_firstCutAtCurrentHeight.isChecked():
+            self.update_vibratome_parameters()
 
     def update_position_rot(self, rot_top, rot_bottom, z):
         self.ui.lcdNumber_rotTop.display(rot_top)
@@ -307,12 +315,52 @@ class MainWindow(QMainWindow):
         jog_step = self.ui.doubleSpinBox_vibratome_zStep_mm.value()
         self.ui.doubleSpinBox_z_jogstep_mm.setValue(jog_step)
 
-    def update_slicing_parameters(self):
-        print("Updating the slicing parameters")
+    def update_vibratome_parameters(self):
+        """Update the vibratome parameters"""
+        # Get the number of slices and the slice thickness
+        current_z = float(self.ui.lineEdit_vibratome_currentZ_mm.text())
+        previous_z = float(self.ui.lineEdit_vibratome_previousCut_mm.text())
         n_slices = self.ui.spinBox_vibratome_nSlices.value()
         slice_thickness = self.ui.doubleSpinBox_vibratomeSliceThicknessMm.value()
-        total_thickness = n_slices * slice_thickness
-        self.ui.lineEdit_vibratome_totalCuttingDistance_mm.setText(f"{total_thickness:.3f}")
+        maximum_cutting_height = self.config['vibratome']['maximum_cutting_height']
+        first_cut_atCurrentZ = self.ui.checkBox_vibratome_firstCutAtCurrentHeight.isChecked()
+
+        # Compute the remaining thickness, nb. of slice remaining, etc.
+        if first_cut_atCurrentZ:
+            next_z = current_z
+        else:
+            next_z = previous_z + slice_thickness
+        next_thickness = next_z - previous_z
+        total_cut_thickness = next_thickness + (n_slices - 1) * slice_thickness
+        remaining_thickness = maximum_cutting_height - previous_z
+        n_slices_remaining = int(np.floor((remaining_thickness - next_thickness) / slice_thickness)) + 1
+
+        # Update the UI
+        self.ui.lineEdit_vibratome_nextCut_mm.setText(f"{next_z:.3f}")
+        self.ui.lineEdit_vibratome_nextCuttingDistance_mm.setText(f"{next_thickness:.3f}")
+        self.ui.lineEdit_vibratome_nextTotalThickness_mm.setText((f"{total_cut_thickness:.3f}"))
+        self.ui.lineEdit_vibratome_remainingThickness_mm.setText((f"{remaining_thickness:.3f}"))
+        self.ui.lineEdit_vibratome_nSlicesRemaining.setText(str(n_slices_remaining))
+        self.ui.spinBox_vibratome_nSlices.setMaximum(n_slices_remaining)
+        if self.ui.actionShow_advanded_vibratome_parameters.isChecked():
+            self.ui.groupBox_vibratome_advancedParameters.show()
+        else:
+            self.ui.groupBox_vibratome_advancedParameters.hide()
+
+    def stage_moveto(self):
+        # Get the destination
+        destination = self.ui.comboBox_stage_XYZ_moveTo.currentText()
+        if destination.lower() == "objective":
+            x, y = self.config["soct-stage-xyz"]["position_objective"]
+        elif destination.lower() == "vibratome":
+            x, y = self.config["soct-stage-xyz"]["position_vibratome"]
+        # TODO: make sure the move is done at a safe height
+        self.thread_stagexyz.move_to(x=x, y=y)
+
+    def stage_moveToVibratome(self):
+        x, y = self.config["soct-stage-xyz"]["position_vibratome"]
+        self.thread_stagexyz.move_to(z=0.0, blocking=True) # TODO: replace to move at a safe height
+        self.thread_stagexyz.move_to(x=x, y=y)
 
     def set_microscope_as_soct(self):
 
@@ -331,9 +379,6 @@ class MainWindow(QMainWindow):
         self.thread_stagexyz = StageXYZThread(self.stage_xyz)
         self.thread_stagexyz.sig_stage_position.connect(self.update_position)
         self.thread_stagexyz.start()
-
-
-
 
         # Hide the rotation control
         #self.ui.
@@ -359,11 +404,10 @@ class MainWindow(QMainWindow):
         self.thread_stagerot.start()
         self.thread_stagexyz.start()
 
-
     def set_microscope_as_vibratome(self):
         self.update_status_and_log("Setting the microscope as vibratome.")
 
-        # update the controllers display
+        # Update the controllers display
         self.ui.groupBox_stageXYZ.show()
         self.ui.groupBox_stageRot.hide()
         self.ui.pliTab.setEnabled(False)
@@ -373,7 +417,7 @@ class MainWindow(QMainWindow):
 
         # Create a vibratome controller
         self.flag_vibratome = False
-        self.vibratome = function_generator_jds6600.FunctionGeneratorJDS6600()
+        self.vibratome = function_generator_jds6600.FunctionGeneratorJDS6600(self.config['vibratome']['com_port'])
         self.vibratome.unarm()
         self.ui.pushButton_vibratome.clicked.connect(self.start_stop_vibratome)
 
@@ -387,6 +431,8 @@ class MainWindow(QMainWindow):
         self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.valueChanged.connect(self.vibratome_update_frequency)
         self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.valueChanged.connect(self.vibratome_update_amplitude)
         self.ui.pushButton_vibratomeArm.clicked.connect(self.arm_vibratome)
+        self.ui.pushButton_vibratome_stageGotoVibratome.clicked.connect(self.stage_moveToVibratome)
+        self.ui.pushButton_vibratomeCut.clicked.connect(self.vibratome_cut)
 
         # Setup the stage
         if hasattr(self, "thread_stagexyz"):
@@ -427,7 +473,6 @@ class MainWindow(QMainWindow):
             self.ui.pushButton_vibratome.setText("Start blade")
             self.ui.pushButton_vibratome.setIcon(QIcon.fromTheme(QIcon.ThemeIcon.MediaPlaybackStart))
 
-
         self.update_vibratome_status()
 
     def vibratome_update_frequency(self):
@@ -448,8 +493,75 @@ class MainWindow(QMainWindow):
             status_msg = "Vibrating"
         else:
             status_msg = "Idle"
-        self.ui.pushButton_vibratomeStatus.setText(status_msg)
+        #self.ui.pushButton_vibratomeStatus.setText(status_msg)
 
+    def vibratome_cut(self):  # Send this to a separate thread
+        self.update_status_and_log("Performing a cut", timeout=0)
+        self.ui.progressBar_vibratome_cutting.setValue(0)
+
+        # Move the sample in front of the vibratome
+        position = np.array(self.thread_stagexyz.position)
+        pos_vibratome = np.array(self.config['soct-stage-xyz']['position_vibratome'])
+        pos_end_cut = np.array(self.config['soct-stage-xyz']['position_afterCut'])
+        margin = 1.0  # mm
+        if not np.allclose(position[0:2], self.config['soct-stage-xyz']['position_vibratome']):
+            self.thread_stagexyz.move_to(z=0.0, blocking=True)  # TODO: move to safe height
+            self.thread_stagexyz.move_to(x=pos_vibratome[0], y=pos_vibratome[1], blocking=True)
+
+        # Get the slicing information
+        next_cut_z = float(self.ui.lineEdit_vibratome_nextCut_mm.text())
+        n_slices = self.ui.spinBox_vibratome_nSlices.value()
+        thickness = self.ui.doubleSpinBox_vibratomeSliceThicknessMm.value()
+        pause_between_slice = self.ui.checkBox_vibratome_pauseBetweenSlice.isChecked()
+        feeding_rate_mms = self.ui.doubleSpinBox_vibratomeFeedingRate_mms.value()
+        speed = feeding_rate_mms * 60  # mm per min
+        cutting_heights = np.linspace(next_cut_z, next_cut_z + (n_slices - 1) * thickness, n_slices).tolist()
+
+        for i in range(len(cutting_heights)):
+            self.ui.progressBar_vibratome_cutting.setValue(i / len(cutting_heights) * 100)
+            # Go to the front of the blade
+            k = cutting_heights[i]
+            position = np.array(self.thread_stagexyz.position)
+            if not np.allclose(position[0:2], pos_vibratome[0:2]):
+                self.thread_stagexyz.move_to(z=0.0, blocking=True) # TODO: move to safe height
+                self.thread_stagexyz.move_to(x=pos_vibratome[0], y=pos_vibratome[1], blocking=True)
+
+            # Move to the next cutting height
+            self.thread_stagexyz.move_to(z=k, blocking=True)
+            while not np.allclose(self.thread_stagexyz.position, [*pos_vibratome, k]):
+                time.sleep(0.1)
+
+            # Start the blade
+            self.vibratome.arm()
+            self.vibratome.start_blade()
+            time.sleep(1.0)
+
+            # Start a move
+            self.thread_stagexyz.move_to(x=pos_end_cut[0], y=pos_end_cut[1], blocking=True, speed=speed)
+            while not np.allclose(self.thread_stagexyz.position, [*pos_end_cut, k]):
+                time.sleep(0.1)
+
+            # Stop the blade
+            self.vibratome.stop_blade()
+            time.sleep(1.0)
+
+            # Move down
+            self.thread_stagexyz.move_by(dz=-margin, blocking=True)
+
+            # Check if we need to pause between slices
+            if pause_between_slice and k != cutting_heights[-1]:
+                dlg = PauseBetweenCutDialog()
+                if dlg.exec():
+                    continue
+                else:
+                    break
+
+        # Unarming the vibratome
+        # TODO: instead of clicking, do it with the APi
+        self.ui.progressBar_vibratome_cutting.setValue(100)
+        self.vibratome.unarm()
+        self.ui.lineEdit_vibratome_previousCut_mm.setText(f"{cutting_heights[i]:.3f}")
+        self.update_vibratome_parameters()
 
     def jog_x(self):
         distance = self.ui.doubleSpinBox_xy_jogstep_mm.value()
@@ -481,7 +593,6 @@ class MainWindow(QMainWindow):
         if self.ui.checkBox_linkTopBottomRot.isChecked():
             angle_bottom = angle_top
         self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
-
 
     def jog_top_rot_reverse(self):
         angle_top = -self.ui.doubleSpinBox_rot_jogstep_deg.value()
@@ -519,11 +630,10 @@ class MainWindow(QMainWindow):
     def acquire_image(self):
         self.update_status_and_log("Acquiring an image")
         #img = pcoCamera.acquire_single_image()
-        img = np.random.random((100,100))
+        img = np.random.random((100, 100))
         self.update_view(img)
         self.acquisitionStatus = True
         self.timer.start()
-
 
 
 if __name__ == "__main__":
