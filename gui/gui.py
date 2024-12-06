@@ -12,7 +12,7 @@ from PySide6.QtGui import QPixmap, QActionGroup, QIcon
 import logging
 from pathlib import Path
 import time
-
+from tqdm.auto import tqdm
 
 #from linum_microscopes.controllers import pcoCamera
 from linum_microscopes.controllers import pdvStage
@@ -21,10 +21,17 @@ from linum_microscopes.config import config
 
 # TODO: put the camera capture in a different thread to avoid freezing the GUI
 # TODO: problem with the z range for the PLI
-# TODO: add tools to set the min-max range in software for the ocnfig (ex: max height for PLI).
+# TODO: add tools to set the min-max range in software for the config (ex: max height for PLI).
 # TODO: disable the software during homing sequence.
 # TODO: prepare the hardware when starting the GUI instead of when choosing the device (available device should be a config thing on every system)
 # TODO: use numpad/joystick to control the stage
+# TODO: hide the jog options if the move would be outside the stage limits
+# TODO: replace tabs by movable boxes
+# TODO: add a busy signal to disable control while actions are in progress (ex. slicing)
+# TODO: refactor to have multiple files, one per widget) instead of a big one.
+# TODO: keep a list of cutting heights in the params file
+# TODO: add options to load and export the slicing and imaging history, logs, etc.
+
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -36,6 +43,7 @@ logging.basicConfig(
     format=f"%(levelname)s - %(asctime)s [{Path(__file__).name}:%(lineno)s | %(funcName)s()] %(message)s",
     level=logging.INFO,
     datefmt="%Y-%m-%d %H:%M:%S")
+
 
 # Tasks
 # TODO: deactivate the stage controller if not homed or configured
@@ -190,7 +198,6 @@ class MainWindow(QMainWindow):
         self.init_viewer()
         self.update_view()
         self.stage_xyz = None
-
 
         # Prepare the camera timer
         self.acquisitionStatus = False
