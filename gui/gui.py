@@ -45,7 +45,6 @@ logging.basicConfig(
 # FIXME: problem with frequent jogs, the GUI freezes
 
 
-
 class StageXYZThread(QThread):
     actions = []
     sig_stage_action_done = Signal(str)
@@ -56,6 +55,7 @@ class StageXYZThread(QThread):
         super().__init__(parent=parent)
         self.stage = stage
         self.stage.homing()
+        self._position = None
 
     def addAction(self, action: str):
         if action == "stage_abort":
@@ -69,98 +69,78 @@ class StageXYZThread(QThread):
             action = self.actions.pop(0)
             self.sig_current_action.emit("Processing: " + action)
 
-        # AVAILABLE_MOVEBY_ACTIONS = ["stage_x_moveby", "stage_y_moveby", "stage_z_moveby"]
-        # for i, moveby_action in enumerate(AVAILABLE_MOVEBY_ACTIONS):
-        #     distance = [0.0] * 3
-        #     if action.startswith(moveby_action):
-        #         pattern = re.compile(rf"{moveby_action} \((.*) mm\)")
-        #         match = pattern.match(action)
-        #         distance[i] = float(match.group(1))
-        #
-        #         if action.startswith("stage_x"):
-        #             response = sbh.stage_xy.move_x_by(distance[0])
-        #         elif action.startswith("stage_y"):
-        #             response = sbh.stage_xy.move_y_by(distance[1])
-        #         elif action.startswith("stage_z"):
-        #             response = sbh.stage_z.move_by(distance[2])
-        #
-        #         if response == -1:
-        #             self.display_warning(f"Move by {distance[i]} mm failed")
-        #         break
-        #
-        # if action == "stage_home_all":
-        #     sbh.stage_z.home()
-        #     sbh.stage_xy.move_to_home()
-        # elif action == "stage_home_z":
-        #     sbh.stage_z.home()
-        # elif action == "stage_home_x":
-        #     sbh.stage_xy.home_x()
-        # elif action == "stage_home_y":
-        #     sbh.stage_xy.home_y()
-        # elif action == "stage_moveto_agarose_center":
-        #     sbh.move_xy_to(sbh.agarose_center_position)
-        # elif action == "stage_moveto_mosaic_center":
-        #     sbh.move_xy_to(sbh.mosaic_center_position)
-        # elif action == "stage_moveto_stage_center":
-        #     sbh.move_xy_to(sbh.stage_center_position)
-        # elif action == "stage_moveto_vibratome":
-        #     sbh.move_xy_to(sbh.cutting_position_xy)
-        # elif action == "stage_moveto_focus_z":
-        #     sbh.move_z_to(sbh.focus_height)
-        # elif action == "stage_moveto_safe_z":
-        #     sbh.move_z_to(sbh.safe_moving_height)
-        # elif action == "stage_moveto_nextCuttingHeight":  # TODO: test the move to next cutting height action
-        #     sbh.move_z_to(sbh.next_cutting_height)
-        # elif action.startswith("vibratome_start"):
-        #     # Get the vibratome frequency
-        #     pattern = re.compile(r"vibratome_start_freq_(\d+)")
-        #     match = pattern.match(action)
-        #     frequency = int(match.group(1))
-        #     sbh.vibratome.set_blade_frequency(frequency)
-        # elif action == "vibratome_stop":
-        #     sbh.vibratome.stop()
-        # elif action.startswith("slicer_multicut_thickness"):
-        #     pattern = re.compile(r"slicer_multicut_thickness_(\d+.\d+)mm")
-        #     match = pattern.match(action)
-        #     total_thickness = float(match.group(1))
-        #     sbh.cut_multiple_slices(sbh.slice_thickness, total_thickness=total_thickness, auto_accept=True)
-        # elif action.startswith("soct_multislice"):
-        #     pattern = re.compile(r"soct_multislice_(\d+)_updateROI_(True|False)_performLastCut_(True|False)")
-        #     match = pattern.match(action)
-        #     n_slices = int(match.group(1))
-        #     if match.group(2) == "True":
-        #         update_roi = True
-        #     else:
-        #         update_roi = False
-        #     if match.group(3) == "True":
-        #         perform_lastCut = True
-        #     else:
-        #         perform_lastCut = False
-        #     sbh.acquire_multiple_mosaics(n_slices, update_roi=update_roi, perform_last_cut=perform_lastCut)
-        # elif action.startswith("calibrate_vibratome_z"):
-        #     pattern = re.compile(r"calibrate_vibratome_z_(\d+.\d+)")
-        #     match = pattern.match(action)
-        #     z = float(match.group(1))
-        #     sbh.calibrate_vibratome(cutting_height=z, perform_cut=True)
-        #
-        # elif action.startswith("detect_roi_z"):
-        #     pattern = re.compile(r"detect_roi_z_(\d+)")
-        #     match = pattern.match(action)
-        #     z = int(match.group(1))
-        #     sbh.detect_mosaic_roi(z)
-        # elif action.startswith("acquire_single_OCT_scan"):
-        #     print("Acquiring single OCT scan")
-        #     # Update the tiles directory
-        #     sbh.acquire_volume()
+        if action == "stage_abort":
+            self.stage.stop()
+
+        if action.startswith("moveto_"):
+            pattern = re.compile(r"moveto_x(.*)_y(.*)_z(.*)_speed(.*)_blocking_(.*)")
+            match = pattern.match(action)
+            x_str = match.group(1)
+            x = float(x_str) if len(x_str) > 0 else None
+            y_str = match.group(2)
+            y = float(y_str) if len(y_str) > 0 else None
+            z_str = match.group(3)
+            z = float(z_str) if len(z_str) > 0 else None
+            speed = float(match.group(4))
+            blocking = bool(int(match.group(5)))
+            self.stage.move(x=x, y=y, z=z, speed=speed, blocking=blocking)
+
+        if action.startswith("moveby_"):
+            pattern = re.compile("moveby_x(.*)_y(.*)_z(.*)_speed(.*)_blocking_(.*)")
+            match = pattern.match(action)
+            dx_str = match.group(1)
+            dx = float(dx_str) if len(dx_str) > 0 else None
+            dy_str = match.group(2)
+            dy = float(dy_str) if len(dy_str) > 0 else None
+            dz_str = match.group(3)
+            dz = float(dz_str) if len(dz_str) > 0 else None
+            speed = float(match.group(4))
+            blocking = bool(int(match.group(5)))
+            self.stage.move_relative(dx=dx, dy=dy, dz=dz, speed=speed, blocking=blocking)
 
         # Post action processing
-        try:
-            self.sig_stage_position.emit(*self.stage.position)
-        except:
-            print("Unable to process stage position")
-        # if action != "None":
-        #     self.sig_stage_action_done.emit(action)
-        #     self.sig_current_action.emit("")
+        self._position = self.stage.position
+        self.sig_stage_position.emit(*self._position)
+
+    def move_to(self, x: float = None, y: float = None, z: float = None, speed: float = 500, blocking: bool = False):
+        assert x is not None or y is not None or z is not None, "At least one of x, y, z or speed must be set"
+
+        if x is None:
+            x = ""
+        else:
+            x = f"{x:.3f}"
+        if y is None:
+            y = ""
+        else:
+            y = f"{y:.3f}"
+        if z is None:
+            z = ""
+        else:
+            z = f"{z:.3f}"
+
+        # Prepare the action
+        action = f"moveto_x{x}_y{y}_z{z}_speed{speed:.3f}_blocking_{str(int(blocking))}"
+        self.addAction(action)
+
+    def move_by(self, dx: float = None, dy: float = None, dz: float = None, speed: float = 500, blocking: bool = False):
+        assert dx is not None or dy is not None or dz is not None, "At least one of dx, dy, dz or speed must be set"
+
+        # Prepare the action
+        if dx is None:
+            dx = ""
+        else:
+            dx = f"{dx:.3f}"
+        if dy is None:
+            dy = ""
+        else:
+            dy = f"{dy:.3f}"
+        if dz is None:
+            dz = ""
+        else:
+            dz = f"{dz:.3f}"
+
+        action = f"moveby_x{dx}_y{dy}_z{dz}_speed{speed:.3f}_blocking_{str(int(blocking))}"
+        self.addAction(action)
 
     def run(self):
         while not self.isInterruptionRequested():
@@ -168,9 +148,35 @@ class StageXYZThread(QThread):
             time.sleep(1 / 30)
 
     def stop(self):
-         self.stage.disconnect()
-         self.requestInterruption()
-         self.wait()
+        self.stage.disconnect()
+        self.requestInterruption()
+        self.wait()
+
+    @property
+    def position(self):
+        return self._position
+
+
+class PauseBetweenCutDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Cutting Pause")
+
+        QBtn = (
+                QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        )
+
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        layout = QVBoxLayout()
+        message = QLabel("Start the next slice?")
+        layout.addWidget(message)
+        layout.addWidget(self.buttonBox)
+        self.setLayout(layout)
+
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -447,27 +453,27 @@ class MainWindow(QMainWindow):
 
     def jog_x(self):
         distance = self.ui.doubleSpinBox_xy_jogstep_mm.value()
-        self.stage_xyz.move_relative(dx=distance, blocking=False)
+        self.thread_stagexyz.move_by(dx=distance, blocking=False)
 
     def reverse_jogx(self):
         distance = self.ui.doubleSpinBox_xy_jogstep_mm.value()
-        self.stage_xyz.move_relative(dx=-distance, blocking=False)
+        self.thread_stagexyz.move_by(dx=-distance, blocking=False)
 
     def jog_y(self):
         distance = self.ui.doubleSpinBox_xy_jogstep_mm.value()
-        self.stage_xyz.move_relative(dy=distance, blocking=False)
+        self.thread_stagexyz.move_by(dy=distance, blocking=False)
 
     def reverse_jogy(self):
         distance = self.ui.doubleSpinBox_xy_jogstep_mm.value()
-        self.stage_xyz.move_relative(dy=-distance, blocking=False)
+        self.thread_stagexyz.move_by(dy=-distance, blocking=False)
 
     def jog_z(self):
         distance = self.ui.doubleSpinBox_z_jogstep_mm.value()
-        self.stage_xyz.move_relative(dz=distance, blocking=False)
+        self.thread_stagexyz.move_by(dz=distance, blocking=False)
 
     def reverse_jogz(self):
         distance = self.ui.doubleSpinBox_z_jogstep_mm.value()
-        self.stage_xyz.move_relative(dz=-distance, blocking=False)
+        self.thread_stagexyz.move_by(dz=-distance, blocking=False)
 
     def jog_top_rot(self):
         angle_top = self.ui.doubleSpinBox_rot_jogstep_deg.value()
@@ -506,7 +512,7 @@ class MainWindow(QMainWindow):
 
     def stop_moves(self):
         if hasattr(self, "stage_xyz") and self.stage_xyz is not None:
-            self.stage_xyz.stop()
+            self.thread_stagexyz.addAction("stage_abort")
         if hasattr(self, "stage_rot") and self.stage_rot is not None:
             self.stage_rot.stop()
 
