@@ -120,6 +120,9 @@ class PDVStageController:
             bytesize=serial.EIGHTBITS
         )
         self.origin_position = [0.0, 0.0, 0.0]
+        self._position = None
+        self._state = None
+        self._speed = None
 
     def __del__(self):
         self.disconnect()
@@ -354,16 +357,31 @@ class PDVStageController:
         idle_counter = 0
         while True:
             report = self.status_report
+            while report is None:
+                report = self.status_report
             if report['state'] != 'ok':
                 if report['state'] == 'Idle':
                     idle_counter += 1
             if idle_counter > 10:
                 break
 
+    def update_internals(self):
+        try:
+            report = self.status_report
+            if 'state' in report:
+                self._state = report['state']
+            if 'pos_mm' in report:
+                self._position = report['pos_mm']
+            if 'feedrate_mm/s' in report:
+                self._speed = report['feedrate_mm/s']
+        except Exception as e:
+            logging.warning("Unable to read the status report, using the old values.")
+
     @property
     def position(self):
         """X,Y,Z stage (machine) position in mm"""
-        position = self.status_report["pos_mm"]  # Position in machine coordinates
+        self.update_internals()
+        position = self._position  # Position in machine coordinates
         position = [x - x0 for x, x0 in zip(position, self.origin_position)]
         return position
 
@@ -401,6 +419,11 @@ class PDVStageController:
     def status_report(self) -> dict:
         """Get the GRBL status report"""
         foo = self.send_command("?")
+        while len(foo) == 0:
+            foo = self.send_command("?")
+
+        if isinstance(foo, list):
+            foo = foo[-1]
 
         # Split the status report
         foo = foo.replace("<", "").replace(">", "").split("|")
