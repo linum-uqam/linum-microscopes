@@ -289,22 +289,27 @@ class PDVStageController:
         blocking
             If True, the method will only return once the move has ended.
         """
-        logging.info("Moving to an absolute work position")
         assert x is not None or y is not None or z is not None, "At least one of x, y, z or speed must be set"
 
         # Preparing the gcode
         gcode = ['G90'] # Absolute move
 
         # Adding target position
+        msg = "Moving to "
         if x is not None:
             gcode.append(f"X{x}")
+            msg += f"X={x:.3f} "
         if y is not None:
             gcode.append(f"Y{y}")
+            msg += f"Y={y:.3f} "
         if z is not None:
             gcode.append(f"Z{z}")
+            msg += f"Z={z:.3f} "
 
         # Adding the feedrate in mm/min
         gcode.append(f"F{speed}")
+        msg += f"at speed {speed:.1f} mm/min"
+        logging.info(msg)
 
         # Sending the command
         command = "$J=" + " ".join(gcode)  # Run a job motion
@@ -329,22 +334,27 @@ class PDVStageController:
         blocking
             If True, the method will only return once the move has ended.
         """
-        logging.info("Performing a relative move")
         assert dx is not None or dy is not None or dz is not None, "At least one of dx, dy, dz or speed must be set"
 
         # Preparing the gcode
         gcode = ["G91"]  # This is an incremental move
 
         # Adding target position
+        msg = "Moving by "
         if dx is not None:
             gcode.append(f"X{dx}")
+            msg += f"dX={dx:.3f} "
         if dy is not None:
             gcode.append(f"Y{dy}")
+            msg += f"dY={dy:.3f} "
         if dz is not None:
             gcode.append(f"Z{dz}")
+            msg += f"dZ={dz:.3f} "
 
         # Adding the feedrate in mm/min
         gcode.append(f"F{speed}")
+        msg += f"at speed {speed:.1f} mm/min"
+        logging.info(msg)
 
         # Sending the command
         command = "$J=" + " ".join(gcode)  # Run a job motion
