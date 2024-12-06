@@ -14,8 +14,9 @@ import serial
 # TODO: Set the default signal when starting the generator
 # TODO: convert the EN undocumented commands (see the chinese doc)
 # TODO: add property to know if the vibratome is running
+# FIXME: we often have serial write timeout errors
 
-SERIAL_PORT = "COM8"
+SERIAL_PORT = "COM3"
 AVAILABLE_WAVEFORMS = ['sine', 'square', 'pulse', 'triangular', 'partial_sine', 'CMOS', 'dc',
                        'half_wave', 'full_wave', 'noise', 'exponential', 'exponential_decay',
                        'multi-tone', 'sinc', 'lorenz']
@@ -29,7 +30,8 @@ class FunctionGeneratorJDS6600:
             baudrate=115200,
             parity=serial.PARITY_NONE,
             stopbits=serial.STOPBITS_ONE,
-            bytesize=serial.EIGHTBITS
+            bytesize=serial.EIGHTBITS,
+            timeout=1 # DEBUG,
         )
 
     def __del__(self):
@@ -48,7 +50,7 @@ class FunctionGeneratorJDS6600:
 
         # Send the command and wait for a response
         self.serial.write(command_encoded)
-        time.sleep(0.05)  # Wait a few milliseconds for the response to be ready
+        time.sleep(0.1)  # Wait a few milliseconds for the response to be ready
 
         # Read the response
         response = self.serial.readline().strip().decode("utf-8")
