@@ -5,10 +5,10 @@ y_axis_travel = 150.0 # mm
 z_axis_travel = 60.0 # mm, https://www.pdvcn.com/motorized-lab-jack/electric-lifting-platform,-motorized-lab-jack,-elevator,-optical-sliding-lift-pt-gd401.html
 homing_direction = 7 # XYZmask, int(0b111)
 axis_direction = 0 # XYZmask, int(0b000)
-x_axis_max_position = 70.0 # Adding 2 for the homing shift
+x_axis_max_position = 76.0 # Adding 2 for the homing shift
 y_axis_max_position = 82.0 # Adding 2 for the homing shift
-position_sample_center = [4.0, 46.0]
-position_vibratome = [56, 55]
+position_objective = [22.5, 46.0]
+position_vibratome = [74, 55]
 
 [pli-stage-xyz]
 com_port = "COM13"
@@ -36,6 +36,7 @@ max_frequency = 200 # Hz
 feeding_rate = 1.0  # aka cutting speed, mm/s
 cutting_distance = 36.0  # mm, in the negative y direction
 slice_thickness = 0.2  # mm
+maximum_cutting_height = 10.0 # mm, used to avoid damaging the sample holder and the stage. # TODO: calibrate this.
 
 
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>790</height>
+    <height>820</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -145,6 +145,49 @@
                 </property>
                </widget>
               </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_8">
+                <property name="text">
+                 <string>XY Step (mm)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QDoubleSpinBox" name="doubleSpinBox_xy_jogstep_mm">
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="maximum">
+                 <double>10.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>1.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="label_9">
+                <property name="text">
+                 <string>Z Step (mm)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QDoubleSpinBox" name="doubleSpinBox_z_jogstep_mm">
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="minimum">
+                 <double>0.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>10.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>1.000000000000000</double>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -245,46 +288,34 @@
                 </property>
                </widget>
               </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="label_8">
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_22">
                 <property name="text">
-                 <string>XY Step (mm)</string>
+                 <string>Move to</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="label_9">
+              <item row="3" column="1">
+               <widget class="QComboBox" name="comboBox_stage_XYZ_moveTo">
+                <item>
+                 <property name="text">
+                  <string>Objective</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Vibratome</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="3" column="3">
+               <widget class="QPushButton" name="pushButton_stageXYZ_moveTo">
                 <property name="text">
-                 <string>Z Step (mm)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="1">
-               <widget class="QDoubleSpinBox" name="doubleSpinBox_xy_jogstep_mm">
-                <property name="decimals">
-                 <number>3</number>
-                </property>
-                <property name="maximum">
-                 <double>10.000000000000000</double>
-                </property>
-                <property name="value">
-                 <double>1.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1">
-               <widget class="QDoubleSpinBox" name="doubleSpinBox_z_jogstep_mm">
-                <property name="decimals">
-                 <number>3</number>
-                </property>
-                <property name="minimum">
-                 <double>0.000000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>10.000000000000000</double>
-                </property>
-                <property name="value">
-                 <double>1.000000000000000</double>
+                 <string>Go</string>
                 </property>
                </widget>
               </item>
@@ -549,6 +580,9 @@
              <property name="enabled">
               <bool>true</bool>
              </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Current z position of the stage&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="text">
               <string>0.000</string>
              </property>
@@ -561,6 +595,9 @@
             <widget class="QLineEdit" name="lineEdit_vibratome_previousCut_mm">
              <property name="enabled">
               <bool>true</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Z height of the previous cut&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>0.000</string>
@@ -575,8 +612,74 @@
              <property name="enabled">
               <bool>true</bool>
              </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Z height of the next cut&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="text">
               <string>0.000</string>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_16">
+             <property name="text">
+              <string>Next cut thickness (mm)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="lineEdit_vibratome_nextCuttingDistance_mm">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Cutting thickness (next - previous)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>0.000</string>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="label_23">
+             <property name="text">
+              <string>Remaining thickness (mm)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QLabel" name="label_24">
+             <property name="text">
+              <string># slice remaining</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QLineEdit" name="lineEdit_vibratome_remainingThickness_mm">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remaining sample thickness to slice, according to the calibrated maximum cutting height&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>0.000</string>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="1">
+            <widget class="QLineEdit" name="lineEdit_vibratome_nSlicesRemaining">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of slices remaining, computed using the remaining thickness and the configured slice thickness.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>1</string>
              </property>
              <property name="readOnly">
               <bool>true</bool>
@@ -593,6 +696,26 @@
              </property>
              <property name="flat">
               <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLineEdit" name="lineEdit_vibratome_nextTotalThickness_mm">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Thickness for the next automated cutting procedure&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>0.200</string>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_25">
+             <property name="text">
+              <string># Slice x Thickness (mm)</string>
              </property>
             </widget>
            </item>
@@ -707,14 +830,14 @@
              </property>
             </widget>
            </item>
-           <item row="7" column="0">
+           <item row="6" column="0">
             <widget class="QLabel" name="label_17">
              <property name="text">
               <string>Pause between slices</string>
              </property>
             </widget>
            </item>
-           <item row="7" column="1">
+           <item row="6" column="1">
             <widget class="QComboBox" name="comboBox_vibratomePause">
              <property name="enabled">
               <bool>true</bool>
@@ -734,14 +857,14 @@
              </item>
             </widget>
            </item>
-           <item row="8" column="0">
+           <item row="7" column="0">
             <widget class="QLabel" name="label_21">
              <property name="text">
               <string>Z Step (mm)</string>
              </property>
             </widget>
            </item>
-           <item row="8" column="1">
+           <item row="7" column="1">
             <widget class="QDoubleSpinBox" name="doubleSpinBox_vibratome_zStep_mm">
              <property name="enabled">
               <bool>true</bool>
@@ -754,23 +877,6 @@
              </property>
             </widget>
            </item>
-           <item row="6" column="0">
-            <widget class="QLabel" name="label_16">
-             <property name="text">
-              <string>Cutting thickness (mm)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="1">
-            <widget class="QLineEdit" name="lineEdit_vibratome_totalCuttingDistance_mm">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>0.000</string>
-             </property>
-            </widget>
-           </item>
           </layout>
          </widget>
         </item>
@@ -780,19 +886,6 @@
            <string>Controls</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
-           <item row="1" column="0">
-            <widget class="QPushButton" name="pushButton_vibratome_jogZ_up">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="text">
-              <string>Z</string>
-             </property>
-             <property name="icon">
-              <iconset theme="go-up"/>
-             </property>
-            </widget>
-           </item>
            <item row="4" column="0">
             <widget class="QPushButton" name="pushButton_vibratome_stageGotoVibratome">
              <property name="enabled">
@@ -800,45 +893,6 @@
              </property>
              <property name="text">
               <string>Go to vibratome</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QPushButton" name="pushButton_vibratome">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Start blade</string>
-             </property>
-             <property name="icon">
-              <iconset theme="QIcon::ThemeIcon::MediaPlaybackStart"/>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="0">
-            <widget class="QPushButton" name="pushButton_vibratomeAbort">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Abort</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QPushButton" name="pushButton_vibratome_jogZ_down">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="text">
-              <string>Z</string>
-             </property>
-             <property name="icon">
-              <iconset theme="go-down"/>
              </property>
             </widget>
            </item>
@@ -871,6 +925,58 @@
              </property>
              <property name="flat">
               <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QPushButton" name="pushButton_vibratome_jogZ_down">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Z</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-down"/>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QPushButton" name="pushButton_vibratomeAbort">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Abort</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="pushButton_vibratome_jogZ_up">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Z</string>
+             </property>
+             <property name="icon">
+              <iconset theme="go-up"/>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QPushButton" name="pushButton_vibratome">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Start blade</string>
+             </property>
+             <property name="icon">
+              <iconset theme="QIcon::ThemeIcon::MediaPlaybackStart"/>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
