@@ -212,6 +212,8 @@ class PDVStageController:
             self.send_command(f"$131={settings['bottom_rotation_travel']}")
         if "z_axis_travel" in settings:
             self.send_command(f"$132={settings['z_axis_travel']}")
+        if "z_axis_max_position" in settings:
+            self.send_command(f"$132={settings['z_axis_max_position']}")
         if "homing_direction" in settings:
             self.send_command(f"$23={settings['homing_direction']}")
         if "axis_direction" in settings:
