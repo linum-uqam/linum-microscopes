@@ -220,6 +220,12 @@ class PDVStageController:
             self.send_command(f"$3={settings['axis_direction']}")
         if "z_step_for_1mm" in settings:
             self.send_command(f"$102={settings['z_step_for_1mm']}")
+        if "x_acceleration" in settings:
+            self.send_command(f"$120={settings['x_acceleration']}")
+        if "y_acceleration" in settings:
+            self.send_command(f"$121={settings['y_acceleration']}")
+        if "z_acceleration" in settings:
+            self.send_command(f"$122={settings['z_acceleration']}")
 
     def disconnect(self):
         self.serial.close()
@@ -366,15 +372,11 @@ class PDVStageController:
     def wait_for_movement_completion(self):
         """ Waits for a move to complete before returning"""
 
-        idle_counter = 0
         while True:
             report = self.status_report
             while report is None:
                 report = self.status_report
-            if report['state'] != 'ok':
-                if report['state'] == 'Idle':
-                    idle_counter += 1
-            if idle_counter > 10:
+            if report['state'] == 'Idle':
                 break
 
     def update_internals(self):

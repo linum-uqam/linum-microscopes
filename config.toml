@@ -11,6 +11,9 @@ z_axis_max_position = 30.5 # Adding 2 for the homing shift
 position_objective = [22.5, 46.0]
 position_vibratome = [74, 55]
 position_afterCut = [74, 19]
+x_acceleration = 10.0 # mm/s^2
+y_acceleration = 10.0 # mm/s^2
+z_acceleration = 1.0 # mm/s^2
 
 [pli-stage-xyz]
 com_port = "COM13"
