@@ -1,5 +1,5 @@
 [soct-stage-xyz]
-com_port = "COM7"
+com_port = "COM5"
 x_axis_travel = 150.0 # mm, https://www.pdvcn.com/motorized-xy-integral-combinating-stage/1197.html
 y_axis_travel = 150.0 # mm
 z_axis_travel = 60.0 # mm, https://www.pdvcn.com/motorized-lab-jack/electric-lifting-platform,-motorized-lab-jack,-elevator,-optical-sliding-lift-pt-gd401.html
@@ -33,7 +33,7 @@ homing_direction = 3 #3,  XYZmask, int(0b011)
 axis_direction = 3 #3,  XYZmask, int(0b011)
 
 [vibratome]
-com_port = 'COM3'
+com_port = 'COM4'
 cutting_frequency = 30  # Hz.
 cutting_amplitude = 5.0 # V
 min_frequency = 30 # HZ
