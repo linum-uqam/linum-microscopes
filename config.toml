@@ -34,12 +34,12 @@ axis_direction = 3 #3,  XYZmask, int(0b011)
 
 [vibratome]
 com_port = 'COM4'
-cutting_frequency = 30  # Hz.
-cutting_amplitude = 5.0 # V
+cutting_frequency = 180  # Hz.
+cutting_amplitude = 2.5 # V
 min_frequency = 30 # HZ
 max_frequency = 200 # Hz
 feeding_rate = 1.0  # aka cutting speed, mm/s
-cutting_distance = 36.0  # mm, in the negative y direction
+cutting_distance = 40.0  # mm, in the negative y direction
 slice_thickness = 0.2  # mm
 maximum_cutting_height = 28.0 # mm, used to avoid damaging the sample holder and the stage. # TODO: calibrate this.
 

@@ -3,6 +3,9 @@
 
 """Function Generator Controller (JDS6600)"""
 import time
+from linum_microscopes.config import config
+from linum_microscopes.controllers.abstractDevice import AbstractDeviceThread
+import logging
 
 # Communication protocol: https://joy-it.net/files/files/Produkte/JT-JDS6600/JT-JDS6600-Communication-protocol.pdf
 # http://www.junteks.com/
@@ -16,70 +19,72 @@ import serial
 # TODO: add property to know if the vibratome is running
 # FIXME: we often have serial write timeout errors
 
-SERIAL_PORT = "COM3"
+SERIAL_PORT = config["vibratome"]["com_port"]
 AVAILABLE_WAVEFORMS = ['sine', 'square', 'pulse', 'triangular', 'partial_sine', 'CMOS', 'dc',
                        'half_wave', 'full_wave', 'noise', 'exponential', 'exponential_decay',
                        'multi-tone', 'sinc', 'lorenz']
 
 
-class FunctionGeneratorJDS6600:
+class Vibratome:
     def __init__(self, port: str = SERIAL_PORT):
         # Connect to the stage xyz and wake it up
-        self.serial = serial.Serial(
-            port=port,
-            baudrate=115200,
-            parity=serial.PARITY_NONE,
-            stopbits=serial.STOPBITS_ONE,
-            bytesize=serial.EIGHTBITS,
-            timeout=1 # DEBUG,
-        )
+        self.serial = serial.Serial()
+        self.serial.port = port
+        self.serial.baudrate = 115200
+        self.serial.parity = serial.PARITY_NONE
+        self.serial.stopbits = serial.STOPBITS_ONE
+        self.serial.bytesize = serial.EIGHTBITS
+        self.serial.timeout = 0.05 # debug
+        self._enabled = False
+        self.config = dict()
 
     def __del__(self):
-        self.unarm()
         self.serial.close()
 
+    def update_config(self):
+        self.config['enabled'] = self._enabled
+        self.config['channel_1'] = dict()
+        self.config['channel_1']['waveform'] = self.get_waveform()
+        self.config['channel_1']['frequency'] = self.get_frequency()
+        self.config['channel_1']['amplitude'] = self.get_amplitude()
+        self.config['channel_1']['phase'] = self.get_phase()
+        self.config['channel_1']['duty_cycle'] = self.get_duty_cycle()
+        self.config['channel_1']['bias'] = self.get_bias()
+
     def write_command(self, command: str) -> str:
-        self.serial.reset_input_buffer()
-        self.serial.reset_output_buffer()
+        response = None
+        if not self.serial.is_open:
+            self.serial.open()
 
-        # Prepare the command
-        command_encoded = command
-        if not command_encoded.endswith("\r\n"):
-            command_encoded += "\r\n"
-        command_encoded = str.encode(command_encoded)
+        try:
+            self.serial.reset_input_buffer()
+            self.serial.reset_output_buffer()
 
-        # Send the command and wait for a response
-        self.serial.write(command_encoded)
-        time.sleep(0.1)  # Wait a few milliseconds for the response to be ready
+            # Prepare the command
+            command_encoded = command
+            if not command_encoded.endswith("\r\n"):
+                command_encoded += "\r\n"
+            command_encoded = str.encode(command_encoded)
 
-        # Read the response
-        response = self.serial.readline().strip().decode("utf-8")
+            # Send the command and wait for a response
+            self.serial.write(command_encoded)
+            time.sleep(0.01)  # Wait a few milliseconds for the response to be ready
+
+            # Read the response
+            response = self.serial.readline().strip().decode("utf-8")
+        except Exception as e:
+            logging.error("Something went wrong with the serial command")
+            raise e
+
         return response
 
-    def arm(self):
-        """Arm the vibratome"""
-        self.set_waveform("pulse", channel=2)
-        freq, unit = self.get_frequency()
-        self.set_frequency(freq, channel=2)
-        self.set_amplitude(2.5, channel=2)
-        self.set_duty_cycle(100, channel=2)
-        self.enable(channel_1=False, channel_2=True)
+    def start_blade(self):
+        self.enable()
+        self._enabled = True
 
-    def unarm(self):
-        """Unarm the vibratome"""
-        self.set_waveform("pulse", channel=2)
-        self.set_duty_cycle(0, channel=2)
-        self.enable(channel_1=False, channel_2=True)
-
-    def start_blade(self, force: bool = False):
-        if force:
-            self.arm()
-        self.enable(channel_1=True, channel_2=True)
-
-    def stop_blade(self, force: bool = False):
-        if force:
-            self.unarm()
-        self.enable(channel_1=False, channel_2=False)
+    def stop_blade(self):
+        self.disable()
+        self._enabled = False
 
     def set_waveform(self, waveform: str, channel: int = 1):
         """Set the waveform of the function generator.
@@ -164,7 +169,7 @@ class FunctionGeneratorJDS6600:
         response = self.write_command(command)
         assert response == ":ok", "Something went wrong!"
 
-    def get_frequency(self):
+    def get_frequency(self, channel: int=1):
         """Get the frequency of the function generator.
         Returns
         -------
@@ -194,7 +199,7 @@ class FunctionGeneratorJDS6600:
             Enable the output of channel 2.
         """
         command = f":w20={int(channel_1)},{int(channel_2)}."
-        _ = self.write_command(command)
+        rsp = self.write_command(command)
 
     def disable(self, channel_1: bool = True, channel_2: bool = True):
         """Disable the output of the function generator.
@@ -366,3 +371,29 @@ class FunctionGeneratorJDS6600:
         response = int(response.replace(base, "").strip(".\r\n"))
         phase = response / 10.0
         return phase
+
+class VibratomeThread(AbstractDeviceThread):
+    def __init__(self):
+        super().__init__()
+        self.device = Vibratome()
+    def start_blade(self):
+        name = "Starting the blade"
+        action = self.device.start_blade
+        self.addAction(name, action, force=True)
+
+    def stop_blade(self):
+        name = "Stopping the blade"
+        action = self.device.stop_blade
+        self.addAction(name, action, force=False)
+
+    @property
+    def is_vibrating(self):
+        return NotImplementedError
+
+    @property
+    def configuration(self) -> dict:
+        self.device.update_config()
+        return self.device.config
+
+
+

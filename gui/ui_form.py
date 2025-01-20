@@ -610,36 +610,26 @@ class Ui_MainWindow(object):
 
         self.gridLayout_2.addWidget(self.pushButton_vibratome_stageGotoVibratome, 2, 0, 1, 1)
 
-        self.pushButton_vibratomeCut = QPushButton(self.groupBox_vibratomeControls)
-        self.pushButton_vibratomeCut.setObjectName(u"pushButton_vibratomeCut")
-        self.pushButton_vibratomeCut.setEnabled(True)
-
-        self.gridLayout_2.addWidget(self.pushButton_vibratomeCut, 4, 2, 1, 1)
-
         self.pushButton_vibratome = QPushButton(self.groupBox_vibratomeControls)
         self.pushButton_vibratome.setObjectName(u"pushButton_vibratome")
-        self.pushButton_vibratome.setEnabled(False)
+        self.pushButton_vibratome.setEnabled(True)
         icon9 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.MediaPlaybackStart))
         self.pushButton_vibratome.setIcon(icon9)
         self.pushButton_vibratome.setCheckable(True)
 
-        self.gridLayout_2.addWidget(self.pushButton_vibratome, 3, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.pushButton_vibratome, 2, 1, 1, 1)
 
-        self.pushButton_vibratomeArm = QPushButton(self.groupBox_vibratomeControls)
-        self.pushButton_vibratomeArm.setObjectName(u"pushButton_vibratomeArm")
-        icon10 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
-        self.pushButton_vibratomeArm.setIcon(icon10)
-        self.pushButton_vibratomeArm.setCheckable(True)
-        self.pushButton_vibratomeArm.setAutoDefault(False)
-        self.pushButton_vibratomeArm.setFlat(False)
+        self.pushButton_vibratomeCut = QPushButton(self.groupBox_vibratomeControls)
+        self.pushButton_vibratomeCut.setObjectName(u"pushButton_vibratomeCut")
+        self.pushButton_vibratomeCut.setEnabled(True)
 
-        self.gridLayout_2.addWidget(self.pushButton_vibratomeArm, 2, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.pushButton_vibratomeCut, 3, 1, 1, 1)
 
         self.pushButton_vibratomeAbort = QPushButton(self.groupBox_vibratomeControls)
         self.pushButton_vibratomeAbort.setObjectName(u"pushButton_vibratomeAbort")
         self.pushButton_vibratomeAbort.setEnabled(False)
 
-        self.gridLayout_2.addWidget(self.pushButton_vibratomeAbort, 5, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.pushButton_vibratomeAbort, 4, 1, 1, 1)
 
 
         self.verticalLayout_6.addWidget(self.groupBox_vibratomeControls)
@@ -696,7 +686,6 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         self.tabWidget.setCurrentIndex(3)
-        self.pushButton_vibratomeArm.setDefault(False)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -815,9 +804,8 @@ class Ui_MainWindow(object):
         self.pushButton_vibratome_stageGotoVibratome.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Moves the stage to position the sample in front of the vibratome blade</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.pushButton_vibratome_stageGotoVibratome.setText(QCoreApplication.translate("MainWindow", u"Go to vibratome", None))
-        self.pushButton_vibratomeCut.setText(QCoreApplication.translate("MainWindow", u"Cut", None))
         self.pushButton_vibratome.setText(QCoreApplication.translate("MainWindow", u"Start blade", None))
-        self.pushButton_vibratomeArm.setText(QCoreApplication.translate("MainWindow", u"Arm", None))
+        self.pushButton_vibratomeCut.setText(QCoreApplication.translate("MainWindow", u"Cut", None))
         self.pushButton_vibratomeAbort.setText(QCoreApplication.translate("MainWindow", u"Abort", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.vibratomeTab), QCoreApplication.translate("MainWindow", u"Vibratome", None))
         self.groupBox_viewer.setTitle(QCoreApplication.translate("MainWindow", u"Viewer", None))

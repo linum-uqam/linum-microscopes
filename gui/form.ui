@@ -935,20 +935,10 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="2">
-            <widget class="QPushButton" name="pushButton_vibratomeCut">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="text">
-              <string>Cut</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="2">
+           <item row="2" column="1">
             <widget class="QPushButton" name="pushButton_vibratome">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="text">
               <string>Start blade</string>
@@ -961,29 +951,17 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="2">
-            <widget class="QPushButton" name="pushButton_vibratomeArm">
-             <property name="text">
-              <string>Arm</string>
-             </property>
-             <property name="icon">
-              <iconset theme="QIcon::ThemeIcon::HelpAbout"/>
-             </property>
-             <property name="checkable">
+           <item row="3" column="1">
+            <widget class="QPushButton" name="pushButton_vibratomeCut">
+             <property name="enabled">
               <bool>true</bool>
              </property>
-             <property name="autoDefault">
-              <bool>false</bool>
-             </property>
-             <property name="default">
-              <bool>false</bool>
-             </property>
-             <property name="flat">
-              <bool>false</bool>
+             <property name="text">
+              <string>Cut</string>
              </property>
             </widget>
            </item>
-           <item row="5" column="0">
+           <item row="4" column="1">
             <widget class="QPushButton" name="pushButton_vibratomeAbort">
              <property name="enabled">
               <bool>false</bool>

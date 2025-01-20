@@ -424,20 +424,16 @@ class MainWindow(QMainWindow):
 
         # Create a vibratome controller
         self.flag_vibratome = False
-        self.vibratome = function_generator_jds6600.FunctionGeneratorJDS6600(self.config['vibratome']['com_port'])
-        self.vibratome.unarm()
+        self.vibratome = function_generator_jds6600.Vibratome(self.config['vibratome']['com_port'])
         self.ui.pushButton_vibratome.clicked.connect(self.start_stop_vibratome)
 
         # Initialize the values
-        frequency, unit = self.vibratome.get_frequency()
-        amplitude = self.vibratome.get_amplitude() * 2
-        self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.setValue(frequency)
-        self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.setValue(amplitude)
+        self.vibratome_update_frequency()
+        self.vibratome_update_amplitude()
 
         # Connect signals and slots
         self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.valueChanged.connect(self.vibratome_update_frequency)
         self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.valueChanged.connect(self.vibratome_update_amplitude)
-        self.ui.pushButton_vibratomeArm.clicked.connect(self.arm_vibratome)
         self.ui.pushButton_vibratome_stageGotoVibratome.clicked.connect(self.stage_moveToVibratome)
         self.ui.pushButton_vibratomeCut.clicked.connect(self.vibratome_cut)
 
@@ -451,22 +447,6 @@ class MainWindow(QMainWindow):
         self.thread_stagexyz = StageXYZThread(self.stage_xyz)
         self.thread_stagexyz.sig_stage_position.connect(self.update_position)
         self.thread_stagexyz.start()
-
-    def arm_vibratome(self):
-        # Get the button state
-        isChecked = self.ui.pushButton_vibratomeArm.isChecked()
-        if isChecked:
-            self.update_status_and_log("Arming the vibratome.")
-            self.vibratome.arm()
-            self.ui.pushButton_vibratomeArm.setText("Unarm")
-            self.ui.pushButton_vibratome.setEnabled(True)
-        else:
-            self.update_status_and_log("Unarming the vibratome.")
-            self.vibratome.unarm()
-            self.ui.pushButton_vibratomeArm.setText("Arm")
-            if self.ui.pushButton_vibratome.isChecked():
-                self.ui.pushButton_vibratome.click()
-            self.ui.pushButton_vibratome.setEnabled(False)
 
     def start_stop_vibratome(self):
         if self.ui.pushButton_vibratome.isChecked():
@@ -504,13 +484,16 @@ class MainWindow(QMainWindow):
 
     def vibratome_cut(self):  # Send this to a separate thread
         self.update_status_and_log("Performing a cut", timeout=0)
+        self.update_vibratome_parameters()
+        self.vibratome_update_frequency()
+        self.vibratome_update_amplitude()
         self.ui.progressBar_vibratome_cutting.setValue(0)
 
         # Move the sample in front of the vibratome
         position = np.array(self.thread_stagexyz.position)
         pos_vibratome = np.array(self.config['soct-stage-xyz']['position_vibratome'])
         pos_end_cut = np.array(self.config['soct-stage-xyz']['position_afterCut'])
-        margin = 1.0  # mm
+        margin = 2.0  # mm
         if not np.allclose(position[0:2], self.config['soct-stage-xyz']['position_vibratome']):
             self.thread_stagexyz.move_to(z=0.0, blocking=True)  # TODO: move to safe height
             self.thread_stagexyz.move_to(x=pos_vibratome[0], y=pos_vibratome[1], blocking=True)
@@ -539,7 +522,6 @@ class MainWindow(QMainWindow):
                 time.sleep(0.1)
 
             # Start the blade
-            self.vibratome.arm()
             self.vibratome.start_blade()
             time.sleep(1.0)
 
@@ -553,7 +535,9 @@ class MainWindow(QMainWindow):
             time.sleep(1.0)
 
             # Move down
-            self.thread_stagexyz.move_by(dz=-margin, blocking=True)
+            safe_z = max(self.stage_xyz.position[2]-margin, 0.0)
+            #self.thread_stagexyz.move_by(dz=-margin, blocking=True)
+            self.thread_stagexyz.move_to(z=safe_z, blocking=True)
 
             # Check if we need to pause between slices
             if pause_between_slice and k != cutting_heights[-1]:
@@ -563,10 +547,9 @@ class MainWindow(QMainWindow):
                 else:
                     break
 
-        # Unarming the vibratome
+        # Post-cut settings
         # TODO: instead of clicking, do it with the APi
         self.ui.progressBar_vibratome_cutting.setValue(100)
-        self.vibratome.unarm()
         self.ui.lineEdit_vibratome_previousCut_mm.setText(f"{cutting_heights[i]:.3f}")
         self.update_vibratome_parameters()
 
@@ -641,6 +624,16 @@ class MainWindow(QMainWindow):
         self.update_view(img)
         self.acquisitionStatus = True
         self.timer.start()
+
+    # @property
+    # def safe_z(self) -> float: # TODO: implement the safe move height logic.
+    #     """Safe height for a move"""
+    #     next_cut_z = self.ui.lineEdit_vibratome_nextCut_mm
+    #
+    #     max(min([self.next_cutting_height - self.slice_thickness, self.focus_height]) - self._safe_move_margin,
+    #         0.0)
+    #     #z = max()
+    #     return 0
 
 
 if __name__ == "__main__":
