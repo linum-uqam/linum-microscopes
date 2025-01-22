@@ -457,12 +457,23 @@ class Ui_MainWindow(object):
         self.progressBar_vibratome_cutting.setObjectName(u"progressBar_vibratome_cutting")
         self.progressBar_vibratome_cutting.setValue(24)
 
-        self.formLayout_4.setWidget(7, QFormLayout.FieldRole, self.progressBar_vibratome_cutting)
+        self.formLayout_4.setWidget(8, QFormLayout.FieldRole, self.progressBar_vibratome_cutting)
 
         self.label_5 = QLabel(self.groupBox_vibratomeInfo)
         self.label_5.setObjectName(u"label_5")
 
-        self.formLayout_4.setWidget(7, QFormLayout.LabelRole, self.label_5)
+        self.formLayout_4.setWidget(8, QFormLayout.LabelRole, self.label_5)
+
+        self.label_27 = QLabel(self.groupBox_vibratomeInfo)
+        self.label_27.setObjectName(u"label_27")
+
+        self.formLayout_4.setWidget(7, QFormLayout.LabelRole, self.label_27)
+
+        self.lineEdit_vibratome_nSlicesDone = QLineEdit(self.groupBox_vibratomeInfo)
+        self.lineEdit_vibratome_nSlicesDone.setObjectName(u"lineEdit_vibratome_nSlicesDone")
+        self.lineEdit_vibratome_nSlicesDone.setReadOnly(True)
+
+        self.formLayout_4.setWidget(7, QFormLayout.FieldRole, self.lineEdit_vibratome_nSlicesDone)
 
 
         self.verticalLayout_6.addWidget(self.groupBox_vibratomeInfo)
@@ -784,6 +795,8 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.lineEdit_vibratome_nSlicesRemaining.setText(QCoreApplication.translate("MainWindow", u"1", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Cutting progress", None))
+        self.label_27.setText(QCoreApplication.translate("MainWindow", u"# slices done", None))
+        self.lineEdit_vibratome_nSlicesDone.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.groupBox_vibratomeParameters.setTitle(QCoreApplication.translate("MainWindow", u"Vibratome Parameters", None))
         self.label_14.setText(QCoreApplication.translate("MainWindow", u"Slice Thickness (mm)", None))
         self.label_15.setText(QCoreApplication.translate("MainWindow", u"Number of slices", None))

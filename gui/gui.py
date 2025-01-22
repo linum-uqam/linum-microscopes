@@ -534,6 +534,11 @@ class MainWindow(QMainWindow):
             self.vibratome.stop_blade()
             time.sleep(1.0)
 
+            # Update the number of slices
+            n_slices_done = int(self.ui.lineEdit_vibratome_nSlicesDone.text())
+            self.ui.lineEdit_vibratome_nSlicesDone.setText(str(n_slices_done+1))
+
+
             # Move down
             safe_z = max(self.stage_xyz.position[2]-margin, 0.0)
             #self.thread_stagexyz.move_by(dz=-margin, blocking=True)
