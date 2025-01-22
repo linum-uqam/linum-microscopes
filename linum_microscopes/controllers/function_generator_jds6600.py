@@ -6,6 +6,8 @@ import time
 from linum_microscopes.config import config
 from linum_microscopes.controllers.abstractDevice import AbstractDeviceThread
 import logging
+from tqdm.auto import tqdm
+import random
 
 # Communication protocol: https://joy-it.net/files/files/Produkte/JT-JDS6600/JT-JDS6600-Communication-protocol.pdf
 # http://www.junteks.com/
@@ -34,11 +36,17 @@ class Vibratome:
         self.serial.parity = serial.PARITY_NONE
         self.serial.stopbits = serial.STOPBITS_ONE
         self.serial.bytesize = serial.EIGHTBITS
-        self.serial.timeout = 0.05 # debug
+        self.serial.timeout = 0.1
         self._enabled = False
         self.config = dict()
+        self.bugfix_timeout = 0.2  # To avoid serial commands that are too close together
+
+        self.set_waveform('dc', channel=2)
+        self.set_bias(5.0, channel=2)  # This will
 
     def __del__(self):
+        if self._enabled:
+            self.stop_blade()
         self.serial.close()
 
     def update_config(self):
@@ -52,7 +60,7 @@ class Vibratome:
         self.config['channel_1']['bias'] = self.get_bias()
 
     def write_command(self, command: str) -> str:
-        response = None
+        response = ""
         if not self.serial.is_open:
             self.serial.open()
 
@@ -68,22 +76,24 @@ class Vibratome:
 
             # Send the command and wait for a response
             self.serial.write(command_encoded)
-            time.sleep(0.01)  # Wait a few milliseconds for the response to be ready
+            self.serial.flush()
 
             # Read the response
             response = self.serial.readline().strip().decode("utf-8")
+            time.sleep(self.bugfix_timeout)  # Wait a few milliseconds for the response to be ready
+
         except Exception as e:
-            logging.error("Something went wrong with the serial command")
-            raise e
+            msg = f"Something went wrong with the serial command ({e})"
+            logging.error(msg)
 
         return response
 
     def start_blade(self):
-        self.enable()
+        self.enable(channel_1=True, channel_2=True)
         self._enabled = True
 
     def stop_blade(self):
-        self.disable()
+        self.disable(channel_1=True, channel_2=True)
         self._enabled = False
 
     def set_waveform(self, waveform: str, channel: int = 1):
@@ -395,5 +405,47 @@ class VibratomeThread(AbstractDeviceThread):
         self.device.update_config()
         return self.device.config
 
+def test_vibratome(n_tests: int=25, sleep_time: float=0.1, enabled=True, disabled=False):
+    # Initialize the vibratome
+    vibratome = Vibratome()
+    n_fails = 0
+    freq = 30.0 # Hz
+    amplitude = 2.5 # V
+
+    if disabled:
+        # Testing the communication with a disabled generator
+        for _ in tqdm(range(n_tests), desc="Disabled vibratome test"):
+            try:
+                _ = vibratome.get_frequency()
+                time.sleep(sleep_time)
+            except Exception as e:
+                print(f"Something went wrong! ({e})")
+                n_fails += 1
+        error_rate_disabled = n_fails / n_tests
+        message = f"Disabled generator error rate (# fail/# tests): {n_fails}/{n_tests} ({n_fails / n_tests * 100:.2f}%)"
+
+        print(message)
+
+    # Testing the communication with an enabled generator
+    if enabled:
+        vibratome.set_amplitude(amplitude)
+        vibratome.set_frequency(freq)
+        vibratome.start_blade()
+        n_fails = 0
+        for _ in tqdm(range(n_tests), desc="Enabled vibratome test"):
+            this_wait_time = random.uniform(0, sleep_time)
+            try:
+                _ = vibratome.get_frequency()
+                time.sleep(this_wait_time)
+            except Exception as e:
+                print(f"Something went wrong (wait time: {this_wait_time:.3e}s)! ({e})")
+                n_fails += 1
+        message = f"Enabled generator error rate (# fail/# tests): {n_fails}/{n_tests} ({n_fails / n_tests * 100:.2f}%)"
+        error_rate_enabled = n_fails / n_tests
+        print(message)
+
+
+    del vibratome
+    #return error_rate_disabled, error_rate_enabled
 
 
