@@ -621,7 +621,9 @@ class MainWindow(QMainWindow):
         self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
 
     def homing_xyz(self):
-        self.stage_xyz.homing()
+        self.stage_xyz.move(z=0, blocking=True)
+        self.stage_xyz.move(x=0, y=0)
+        #self.stage_xyz.homing()
 
     def homing_rot(self):
         self.stage_rot.homing()
