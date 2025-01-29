@@ -270,6 +270,7 @@ class MainWindow(QMainWindow):
         self.ui.doubleSpinBox_vibratomeSliceThicknessMm.setValue(self.config['vibratome']['slice_thickness'])
         self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.setValue(self.config['vibratome']['cutting_frequency'])
         self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.setValue(self.config['vibratome']['cutting_amplitude'])
+        self.ui.actionSet_current_position_as_vibratome_position.triggered.connect(self.update_vibratome_position)
         self.update_vibratome_parameters()
 
     def init_viewer(self):
@@ -368,6 +369,12 @@ class MainWindow(QMainWindow):
         x, y = self.config["soct-stage-xyz"]["position_vibratome"]
         self.thread_stagexyz.move_to(z=0.0, blocking=True) # TODO: replace to move at a safe height
         self.thread_stagexyz.move_to(x=x, y=y)
+
+    def update_vibratome_position(self):
+        x, y = self.stage_xyz.position[0:2]
+        self.config["soct-stage-xyz"]["position_vibratome"] = (x,y)
+        msg = f"Setting the vibratome position to (x,y) = ({x},{y})"
+        logging.info(msg)
 
     def set_microscope_as_soct(self):
 

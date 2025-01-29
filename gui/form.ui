@@ -1045,6 +1045,7 @@
      <string>Settings</string>
     </property>
     <addaction name="actionShow_advanded_vibratome_parameters"/>
+    <addaction name="actionSet_current_position_as_vibratome_position"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -1064,6 +1065,7 @@
     <addaction name="actionOCRT_Optical_Coherence_Refraction_Tomography"/>
     <addaction name="actionPLI_Polarized_Light_Imaging"/>
     <addaction name="actionVibratome"/>
+    <addaction name="actionXYZ_Stage"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuConfiguration"/>
@@ -1133,6 +1135,22 @@
    </property>
    <property name="text">
     <string>Show advanded vibratome parameters</string>
+   </property>
+  </action>
+  <action name="actionXYZ_Stage">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>XYZ Stage</string>
+   </property>
+  </action>
+  <action name="actionSet_current_position_as_vibratome_position">
+   <property name="text">
+    <string>Set current position as vibratome position</string>
+   </property>
+   <property name="toolTip">
+    <string>This position will be used at the intial position for the cut</string>
    </property>
   </action>
  </widget>
