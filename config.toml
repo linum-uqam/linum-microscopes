@@ -9,7 +9,7 @@ x_axis_max_position = 76.0 # Adding 2 for the homing shift
 y_axis_max_position = 82.0 # Adding 2 for the homing shift
 z_axis_max_position = 30.5 # Adding 2 for the homing shift
 position_objective = [22.5, 46.0]
-position_vibratome = [74, 55]
+position_vibratome = [72, 55]
 position_afterCut = [74, 19]
 x_acceleration = 10.0 # mm/s^2
 y_acceleration = 10.0 # mm/s^2
@@ -34,12 +34,12 @@ axis_direction = 3 #3,  XYZmask, int(0b011)
 
 [vibratome]
 com_port = 'COM4'
-cutting_frequency = 180  # Hz.
-cutting_amplitude = 2.5 # V
+cutting_frequency = 169  # Hz.
+cutting_amplitude = 5.0 # V
 min_frequency = 30 # HZ
 max_frequency = 200 # Hz
 feeding_rate = 1.0  # aka cutting speed, mm/s
-cutting_distance = 40.0  # mm, in the negative y direction
+cutting_distance = 50.0  # mm, in the negative y direction
 slice_thickness = 0.2  # mm
 maximum_cutting_height = 25.0 # mm, used to avoid damaging the sample holder and the stage. # TODO: calibrate this.
 
