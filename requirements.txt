@@ -5,4 +5,5 @@ PyQtDarkTheme
 pyserial
 tomli
 tqdm
+pyfirmata2
 pymeasure
