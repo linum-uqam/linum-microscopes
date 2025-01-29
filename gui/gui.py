@@ -197,7 +197,7 @@ class MainWindow(QMainWindow):
         self.update_image(np.random.rand(100, 100))
         self.init_viewer()
         self.update_view()
-        self.stage_xyz = None
+        self.stage_xyz : pdvStage.SOCTXYZStage = None
 
         # Prepare the camera timer
         self.acquisitionStatus = False
@@ -500,7 +500,9 @@ class MainWindow(QMainWindow):
         # Move the sample in front of the vibratome
         position = np.array(self.thread_stagexyz.position)
         pos_vibratome = np.array(self.config['soct-stage-xyz']['position_vibratome'])
-        pos_end_cut = np.array(self.config['soct-stage-xyz']['position_afterCut'])
+        cutting_length_mm = self.ui.doubleSpinBox_vibratomeCuttingLengthMm.value()
+        pos_end_cut = [pos_vibratome[0], pos_vibratome[1] - cutting_length_mm]
+        print(pos_end_cut)
         margin = 2.0  # mm
         if not np.allclose(position[0:2], self.config['soct-stage-xyz']['position_vibratome']):
             self.thread_stagexyz.move_to(z=0.0, blocking=True)  # TODO: move to safe height
