@@ -15,7 +15,7 @@ import time
 from tqdm.auto import tqdm
 
 #from linum_microscopes.controllers import pcoCamera
-from linum_microscopes.controllers import pdvStage
+from linum_microscopes.controllers import pdvStage, vibratomeAgilent
 from linum_microscopes.controllers import function_generator_jds6600
 from linum_microscopes.config import config
 
@@ -424,7 +424,8 @@ class MainWindow(QMainWindow):
 
         # Create a vibratome controller
         self.flag_vibratome = False
-        self.vibratome = function_generator_jds6600.Vibratome(self.config['vibratome']['com_port'])
+        #self.vibratome = function_generator_jds6600.Vibratome(self.config['vibratome']['com_port'])
+        self.vibratome = vibratomeAgilent.Vibratome()
         self.ui.pushButton_vibratome.clicked.connect(self.start_stop_vibratome)
 
         # Initialize the values
@@ -466,11 +467,11 @@ class MainWindow(QMainWindow):
         frequency = self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.value()
         msg = f"Setting blade frequency to {frequency} Hz"
         self.update_status_and_log(msg)
-        self.vibratome.set_frequency(frequency, channel=1)
-        self.vibratome.set_frequency(frequency, channel=2)
+        self.vibratome.set_frequency(frequency)
+        #self.vibratome.set_frequency(frequency, channel=2)
 
     def vibratome_update_amplitude(self):
-        amplitude = self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.value() / 2
+        amplitude = self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.value()
         msg = f"Setting amplitude to {amplitude} V"
         self.update_status_and_log(msg)
         self.vibratome.set_amplitude(amplitude)
