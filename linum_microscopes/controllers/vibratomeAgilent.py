@@ -376,15 +376,19 @@ def test():
         device.output = False
 
 
-def test_for_resonance_frequency(start_freq: float, stop_freq: float, step:float, amplitude: float):
+def calibrate_resonance_frequency(start_freq: float, stop_freq: float, step: float, amplitude: float, on_time: float=2, off_time: float=0.5):
     # Initialize the vibratome
     vibratome = Vibratome()
     vibratome.set_amplitude(amplitude)
 
-    for freq in tqdm(np.arange(start_freq, stop_freq, step), desc="Frequency test"):
+    frequencies = np.arange(start_freq, stop_freq, step)
+    for freq in tqdm(frequencies, desc="Frequency test"):
+        vibratome.device.beep()
         vibratome.set_frequency(freq)
         vibratome.start_blade()
-        time.sleep(0.5)
+        time.sleep(on_time)
         vibratome.stop_blade()
+        time.sleep(off_time)
+
 
     del vibratome
