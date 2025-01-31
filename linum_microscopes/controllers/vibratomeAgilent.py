@@ -1,5 +1,5 @@
 from pymeasure.instruments.agilent import Agilent33220A
-import time
+import pyfirmata2
 
 id = "USB0::0x0957::0x0407::MY44013298::INSTR"
 
@@ -20,19 +20,32 @@ import serial
 # FIXME: we often have serial write timeout errors
 
 SERIAL_PORT = "USB0::0x0957::0x0407::MY44013298::INSTR"
+ARDUINO_SERIAL_PORT = "COM6"
+
 
 class Vibratome:
     def __init__(self, port: str = SERIAL_PORT):
         # Connect to the stage xyz and wake it up
         self.device = Agilent33220A(SERIAL_PORT)
         self._enabled = False
+
+        # Initializing the arduino board used to enable/disable the voicecoil driver
+        self.board = pyfirmata2.Arduino(ARDUINO_SERIAL_PORT)
+        self.disable()
+
+        # Connect to the function generator device
+        self.device = Agilent33220A(port)
         self.config = dict()
-        self.bugfix_timeout = 0.2  # To avoid serial commands that are too close together
+
+        # Configure the device with default parameters
+        self.device.shape = "SINUSOID"
+        self.set_frequency(30.0)
+        self.set_amplitude(1.0)
 
     def __del__(self):
-        if self._enabled:
-            self.stop_blade()
+        self.stop_blade()
         self.device.shutdown()
+        self.board.exit()
 
     def update_config(self):
         self.config['enabled'] = self._enabled
@@ -46,10 +59,12 @@ class Vibratome:
 
 
     def start_blade(self):
+        self.enable()
         self.device.output = True
         self._enabled = True
 
     def stop_blade(self):
+        self.disable()
         self.device.output = False
         self._enabled = False
 
@@ -181,86 +196,20 @@ class Vibratome:
         """
         return self.device.amplitude
 
-    # def set_duty_cycle(self, duty_cycle: float, channel: int = 1):
-    #     """Set the duty cycle (between 0.0 and 100.
-    #     Parameters
-    #     ----------
-    #     duty_cycle : float
-    #         The duty cycle to set, between 0.0 and 100.
-    #     channel : int
-    #         The channel to set the range. Either 1 or 2
-    #     """
-    #     assert channel in [1, 2], "Channel must be 1 or 2"
-    #     assert 0 <= duty_cycle <= 100, "duty_cycle must be between 0 and 100"
-    #     if channel == 1:
-    #         command = f":w29={int(duty_cycle * 10)}."
-    #     else:
-    #         command = f":w30={int(duty_cycle * 10)}."
-    #     response = self.write_command(command)
-    #     assert response == ":ok", "Something went wrong!"
-    #
-    # def get_duty_cycle(self, channel: int = 1) -> float:
-    #     """Get the duty cycle of the function generator.
-    #     Parameters
-    #     ----------
-    #     channel : int
-    #         The channel to get the range. Either 1 or 2
-    #     Returns
-    #     -------
-    #     duty_cycle : float
-    #         The duty cycle between 0.0 and 100.0
-    #     """
-    #     assert channel in [1, 2], " Channel must be 1 or 2"
-    #     if channel == 1:
-    #         base = ":r29="
-    #     else:
-    #         base = ":r30="
-    #     command = base + "."
-    #     response = self.write_command(command)
-    #     response = response.replace(base, "").strip(".\r\n")
-    #     duty_cycle = float(response) / 10.0
-    #     return duty_cycle
+    def enable(self):
+        """Enable the vibratome."""
+        self.board.digital[2].write(1)
+        self._enabled = True
 
-    # def set_bias(self, value: float, channel: int = 1):
-    #     """Set the offset of the function generator.
-    #     Parameters
-    #     ----------
-    #     value : float
-    #         The bias to set in volts, between -9.99V and 9.99V
-    #     channel: int
-    #         The channel to set the range. Either 1 or 2.
-    #     """
-    #     assert channel in [1, 2], "Channel must be 1 or 2"
-    #     assert -9.99 <= value <= 9.99, "Value must be between -9.99V and 9.99V"
-    #     bias = int(value * 100 + 1000)
-    #     if channel == 1:
-    #         command = f":w27={bias}."
-    #     elif channel == 2:
-    #         command = f":w28={bias}."
-    #     response = self.write_command(command)
-    #     assert response == ":ok", "Something went wrong!"
-    #
-    # def get_bias(self, channel: int = 1) -> float:
-    #     """Get the bias of the function generator.
-    #     Parameters
-    #     ----------
-    #     channel : int
-    #         The channel to get the range. Either 1 or 2
-    #     Returns
-    #     -------
-    #     bias : float
-    #         The bias of the function generator in volts.
-    #     """
-    #     assert channel in [1, 2], "Channel must be 1 or 2"
-    #     if channel == 1:
-    #         base = ":r27="
-    #     else:
-    #         base = ":r28="
-    #     command = base + "."
-    #     response = self.write_command(command)
-    #     response = int(response.replace(base, "").strip(".\r\n"))
-    #     bias = (response - 1000) / 100
-    #     return bias
+    def disable(self):
+        """Disable the vibratome."""
+        self.board.digital[2].write(0)
+        self._enabled = False
+
+    @property
+    def is_vibrating(self) -> bool:
+        """Return True if the vibratome is vibrating."""
+        return self._enabled and self.device.output
 
     # def set_phase(self, phase: float):
     #     """Set the phase (in degrees) of channel 1.
