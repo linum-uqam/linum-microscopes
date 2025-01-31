@@ -10,6 +10,7 @@ from linum_microscopes.controllers.abstractDevice import AbstractDeviceThread
 import logging
 from tqdm.auto import tqdm
 import random
+import numpy as np
 
 import serial
 
@@ -375,12 +376,12 @@ def test():
         device.output = False
 
 
-def test_for_resonance_frequency(start_freq: float, stop_freq: float, amplitude: float):
+def test_for_resonance_frequency(start_freq: float, stop_freq: float, step:float, amplitude: float):
     # Initialize the vibratome
     vibratome = Vibratome()
     vibratome.set_amplitude(amplitude)
 
-    for freq in tqdm(range(start_freq, stop_freq), desc="Frequency test"):
+    for freq in tqdm(np.arange(start_freq, stop_freq, step), desc="Frequency test"):
         vibratome.set_frequency(freq)
         vibratome.start_blade()
         time.sleep(0.5)
