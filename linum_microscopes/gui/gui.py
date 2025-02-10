@@ -1,24 +1,26 @@
 # This Python file uses the following encoding: utf-8
-import re
+import logging
 import sys
+import time
 
 import numpy as np
 import pyqtgraph as pg
 import qdarktheme
 from PySide6 import QtCore
-from PySide6.QtCore import QThread, Signal
-from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 from PySide6.QtGui import QPixmap, QActionGroup, QIcon
-import logging
-from pathlib import Path
-import time
-from tqdm.auto import tqdm
+from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 
-#from linum_microscopes.controllers import pcoCamera
-from linum_microscopes.controllers import pdvStage, vibratomeAgilent
-from linum_microscopes.controllers import function_generator_jds6600
-from linum_microscopes.config import config
+from linum_microscopes.acquisition_management import AcquisitionStrategy
+from linum_microscopes.config import ConfigManager, initialise_logging
+from linum_microscopes.controllers import AbstractDevice
+# Important:
+# You need to run the following command to generate the ui_form.py file
+#     pyside6-uic form.ui -o ui_form.py, or
+#     pyside2-uic form.ui -o ui_form.py
+from ui_form import Ui_MainWindow
 
+
+# from linum_microscopes.controllers import pcoCamera
 # TODO: put the camera capture in a different thread to avoid freezing the GUI
 # TODO: problem with the z range for the PLI
 # TODO: add tools to set the min-max range in software for the config (ex: max height for PLI).
@@ -33,18 +35,6 @@ from linum_microscopes.config import config
 # TODO: add options to load and export the slicing and imaging history, logs, etc.
 
 
-# Important:
-# You need to run the following command to generate the ui_form.py file
-#     pyside6-uic form.ui -o ui_form.py, or
-#     pyside2-uic form.ui -o ui_form.py
-from ui_form import Ui_MainWindow
-
-logging.basicConfig(
-    format=f"%(levelname)s - %(asctime)s [{Path(__file__).name}:%(lineno)s | %(funcName)s()] %(message)s",
-    level=logging.INFO,
-    datefmt="%Y-%m-%d %H:%M:%S")
-
-
 # Tasks
 # TODO: deactivate the stage controller if not homed or configured
 # TODO: create a separate thread for every hardware component
@@ -52,118 +42,6 @@ logging.basicConfig(
 # FIXME: the stage seems to go off limits
 # TODO: add a message box during homing sequence.
 # FIXME: problem with frequent jogs, the GUI freezes
-
-
-class StageXYZThread(QThread):
-    actions = []
-    sig_stage_action_done = Signal(str)
-    sig_current_action = Signal(str)
-    sig_stage_position = Signal(float, float, float)
-
-    def __init__(self, stage, parent=None):
-        super().__init__(parent=parent)
-        self.stage = stage
-        self.stage.homing()
-        self._position = None
-
-    def addAction(self, action: str):
-        if action == "stage_abort":
-            self.actions.clear()
-        self.actions.append(action)
-
-    def process_next_action(self):
-        if len(self.actions) == 0:
-            action = "None"
-        else:
-            action = self.actions.pop(0)
-            self.sig_current_action.emit("Processing: " + action)
-
-        if action == "stage_abort":
-            self.stage.stop()
-
-        if action.startswith("moveto_"):
-            pattern = re.compile(r"moveto_x(.*)_y(.*)_z(.*)_speed(.*)_blocking_(.*)")
-            match = pattern.match(action)
-            x_str = match.group(1)
-            x = float(x_str) if len(x_str) > 0 else None
-            y_str = match.group(2)
-            y = float(y_str) if len(y_str) > 0 else None
-            z_str = match.group(3)
-            z = float(z_str) if len(z_str) > 0 else None
-            speed = float(match.group(4))
-            blocking = bool(int(match.group(5)))
-            self.stage.move(x=x, y=y, z=z, speed=speed, blocking=blocking)
-
-        if action.startswith("moveby_"):
-            pattern = re.compile("moveby_x(.*)_y(.*)_z(.*)_speed(.*)_blocking_(.*)")
-            match = pattern.match(action)
-            dx_str = match.group(1)
-            dx = float(dx_str) if len(dx_str) > 0 else None
-            dy_str = match.group(2)
-            dy = float(dy_str) if len(dy_str) > 0 else None
-            dz_str = match.group(3)
-            dz = float(dz_str) if len(dz_str) > 0 else None
-            speed = float(match.group(4))
-            blocking = bool(int(match.group(5)))
-            self.stage.move_relative(dx=dx, dy=dy, dz=dz, speed=speed, blocking=blocking)
-
-        # Post action processing
-        self._position = self.stage.position
-        self.sig_stage_position.emit(*self._position)
-
-    def move_to(self, x: float = None, y: float = None, z: float = None, speed: float = 500, blocking: bool = False):
-        assert x is not None or y is not None or z is not None, "At least one of x, y, z or speed must be set"
-
-        if x is None:
-            x = ""
-        else:
-            x = f"{x:.3f}"
-        if y is None:
-            y = ""
-        else:
-            y = f"{y:.3f}"
-        if z is None:
-            z = ""
-        else:
-            z = f"{z:.3f}"
-
-        # Prepare the action
-        action = f"moveto_x{x}_y{y}_z{z}_speed{speed:.3f}_blocking_{str(int(blocking))}"
-        self.addAction(action)
-
-    def move_by(self, dx: float = None, dy: float = None, dz: float = None, speed: float = 500, blocking: bool = False):
-        assert dx is not None or dy is not None or dz is not None, "At least one of dx, dy, dz or speed must be set"
-
-        # Prepare the action
-        if dx is None:
-            dx = ""
-        else:
-            dx = f"{dx:.3f}"
-        if dy is None:
-            dy = ""
-        else:
-            dy = f"{dy:.3f}"
-        if dz is None:
-            dz = ""
-        else:
-            dz = f"{dz:.3f}"
-
-        action = f"moveby_x{dx}_y{dy}_z{dz}_speed{speed:.3f}_blocking_{str(int(blocking))}"
-        self.addAction(action)
-
-    def run(self):
-        while not self.isInterruptionRequested():
-            self.process_next_action()
-            time.sleep(1 / 30)
-
-    def stop(self):
-        self.stage.disconnect()
-        self.requestInterruption()
-        self.wait()
-
-    @property
-    def position(self):
-        return self._position
 
 
 class PauseBetweenCutDialog(QDialog):
@@ -188,16 +66,26 @@ class PauseBetweenCutDialog(QDialog):
 
 
 class MainWindow(QMainWindow):
+    config_manager: ConfigManager
+    # AbstractDevice governs the thread and connection state
+    stage: AbstractDevice
+    camera: AbstractDevice
+    vibratome: AbstractDevice
+    # AcquisitionStrategy houses the functionality of the different devices.
+    # For proper type hinting, use the device for interacting with the class and use strategy.device
+    # for calling device functionality
+    strategy: AcquisitionStrategy
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.config = config
+        self.config_manager = ConfigManager(config_file="config.toml")
+        initialise_logging()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.init_ui()
         self.update_image(np.random.rand(100, 100))
         self.init_viewer()
         self.update_view()
-        self.stage_xyz : pdvStage.SOCTXYZStage = None
 
         # Prepare the camera timer
         self.acquisitionStatus = False
@@ -212,7 +100,7 @@ class MainWindow(QMainWindow):
 
     def init_ui(self):
         # Set the icons
-        #self.ui.actionOpen.setIcon(QPixmap("resources/open.svg"))
+        # self.ui.actionOpen.setIcon(QPixmap("resources/open.svg"))
 
         # Set menu actions
         microscopeSetupGroupTools = QActionGroup(self)
@@ -230,13 +118,13 @@ class MainWindow(QMainWindow):
 
         # Stage XYZ job control
         self.ui.pushButton_stage_jogX.clicked.connect(self.jog_x)
-        self.ui.pushButton_stage_jogXReverse.clicked.connect(self.reverse_jogx)
+        self.ui.pushButton_stage_jogXReverse.clicked.connect(self.reverse_jog_x)
         self.ui.pushButton_stage_jogY.clicked.connect(self.jog_y)
-        self.ui.pushButton_stage_jogYReverse.clicked.connect(self.reverse_jogy)
+        self.ui.pushButton_stage_jogYReverse.clicked.connect(self.reverse_jog_y)
         self.ui.pushButton_stage_jogZ.clicked.connect(self.jog_z)
         self.ui.pushButton_vibratome_jogZ_up.clicked.connect(self.jog_z)
-        self.ui.pushButton_stage_jogZReverse.clicked.connect(self.reverse_jogz)
-        self.ui.pushButton_vibratome_jogZ_down.clicked.connect(self.reverse_jogz)
+        self.ui.pushButton_stage_jogZReverse.clicked.connect(self.reverse_jog_z)
+        self.ui.pushButton_vibratome_jogZ_down.clicked.connect(self.reverse_jog_z)
         self.ui.pushButton_stage_moveToHomeXYZ.clicked.connect(self.homing_xyz)
         self.ui.pushButton_stage_stop.clicked.connect(self.stop_moves)
         self.ui.doubleSpinBox_z_jogstep_mm.valueChanged.connect(self.update_z_jogstep)
@@ -265,11 +153,15 @@ class MainWindow(QMainWindow):
         self.ui.progressBar_vibratome_cutting.setValue(0)
 
         # Setup vibratome settings
-        self.ui.doubleSpinBox_vibratomeCuttingLengthMm.setValue(self.config['vibratome']['cutting_distance'])
-        self.ui.doubleSpinBox_vibratomeFeedingRate_mms.setValue(self.config['vibratome']['feeding_rate'])
-        self.ui.doubleSpinBox_vibratomeSliceThicknessMm.setValue(self.config['vibratome']['slice_thickness'])
-        self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.setValue(self.config['vibratome']['cutting_frequency'])
-        self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.setValue(self.config['vibratome']['cutting_amplitude'])
+        self.ui.doubleSpinBox_vibratomeCuttingLengthMm.setValue(
+            self.config_manager.config['vibratome']['cutting_distance'])
+        self.ui.doubleSpinBox_vibratomeFeedingRate_mms.setValue(self.config_manager.config['vibratome']['feeding_rate'])
+        self.ui.doubleSpinBox_vibratomeSliceThicknessMm.setValue(
+            self.config_manager.config['vibratome']['slice_thickness'])
+        self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.setValue(
+            self.config_manager.config['vibratome']['cutting_frequency'])
+        self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.setValue(
+            self.config_manager.config['vibratome']['cutting_amplitude'])
         self.ui.actionSet_current_position_as_vibratome_position.triggered.connect(self.update_vibratome_position)
         self.update_vibratome_parameters()
 
@@ -330,7 +222,7 @@ class MainWindow(QMainWindow):
         previous_z = float(self.ui.lineEdit_vibratome_previousCut_mm.text())
         n_slices = self.ui.spinBox_vibratome_nSlices.value()
         slice_thickness = self.ui.doubleSpinBox_vibratomeSliceThicknessMm.value()
-        maximum_cutting_height = self.config['vibratome']['maximum_cutting_height']
+        maximum_cutting_height = self.config_manager.config['vibratome']['maximum_cutting_height']
         first_cut_atCurrentZ = self.ui.checkBox_vibratome_firstCutAtCurrentHeight.isChecked()
 
         # Compute the remaining thickness, nb. of slice remaining, etc.
@@ -359,26 +251,45 @@ class MainWindow(QMainWindow):
         # Get the destination
         destination = self.ui.comboBox_stage_XYZ_moveTo.currentText()
         if destination.lower() == "objective":
-            x, y = self.config["soct-stage-xyz"]["position_objective"]
+            x, y = self.config_manager.config["soct-stage-xyz"]["position_objective"]
         elif destination.lower() == "vibratome":
-            x, y = self.config["soct-stage-xyz"]["position_vibratome"]
+            x, y = self.config_manager.config["soct-stage-xyz"]["position_vibratome"]
         # TODO: make sure the move is done at a safe height
-        self.thread_stagexyz.move_to(x=x, y=y)
+        self.strategy.stage.move_to(x=x, y=y)
 
-    def stage_moveToVibratome(self):
-        x, y = self.config["soct-stage-xyz"]["position_vibratome"]
-        self.thread_stagexyz.move_to(z=0.0, blocking=True) # TODO: replace to move at a safe height
-        self.thread_stagexyz.move_to(x=x, y=y)
+    def stage_move_to_vibratome(self):
+        x, y = self.config_manager.config["soct-stage-xyz"]["position_vibratome"]
+        current_x, current_y = self.strategy.stage.position[0:2]
+        self.strategy.stage.move_to(current_x, current_y, z=0.0,
+                                    blocking=True)  # TODO: replace to move at a safe height
+        self.strategy.stage.move_to(x=x, y=y)
 
     def update_vibratome_position(self):
-        x, y = self.stage_xyz.position[0:2]
-        self.config["soct-stage-xyz"]["position_vibratome"] = (x,y)
+        x, y = self.strategy.stage.position[0:2]
+        self.config_manager.config["soct-stage-xyz"]["position_vibratome"] = (x, y)
         msg = f"Setting the vibratome position to (x,y) = ({x},{y})"
         logging.info(msg)
 
     def set_microscope_as_soct(self):
+        try:
+            from linum_microscopes.microscopes.soct import AgilentVibratome, XYZStage, OCTCamera, SOCTStrategy
+        except:
+            self.update_status_and_log("The SOCT module is not available.")
+            return
 
         self.update_status_and_log("Setting the microscope as soct.")
+
+        # Initialize the controllers, separate out assignment and object creation to avoid issues with type hinting
+        camera = OCTCamera()
+        stage = XYZStage(self.config_manager.config)
+        vibratome = AgilentVibratome(self.config_manager.config)
+
+        self.camera = camera
+        self.stage = stage
+        self.vibratome = vibratome
+
+        # Create the strategy
+        self.strategy = SOCTStrategy(camera, vibratome, stage)
 
         # Display the XYZ Stage Control
         self.ui.groupBox_stageXYZ.show()
@@ -389,36 +300,42 @@ class MainWindow(QMainWindow):
             self.thread_stagexyz.stop()
             del self.thread_stagexyz
 
-        self.stage_xyz = pdvStage.SOCTXYZStage()
-        self.thread_stagexyz = StageXYZThread(self.stage_xyz)
-        self.thread_stagexyz.sig_stage_position.connect(self.update_position)
-        self.thread_stagexyz.start()
+        # Connect the stage to the thread
+        self.strategy.stage.sig_stage_position.connect(self.update_position)
+        self.stage.thread.run()
 
         # Hide the rotation control
-        #self.ui.
+        # self.ui.
 
     def set_microscope_as_pli(self):
-        self.update_status_and_log("Setting the microscope as PLI.")
+        # self.update_status_and_log("Setting the microscope as PLI.")
+        #
+        # # Update the controllers display
+        # self.ui.groupBox_stageXYZ.show()
+        # self.ui.groupBox_stageRot.show()
+        #
+        # if hasattr(self, "thread_stagexyz"):
+        #     print("Exiting thread")
+        #     self.thread_stagexyz.stop()
+        #     del self.thread_stagexyz
+        #
+        # self.stage_rot = pdvStage.PLIRotStage()
+        # self.thread_stagerot = StageXYZThread(self.stage_rot)
+        # self.thread_stagerot.sig_stage_position.connect(self.update_position_rot)
+        # self.stage_xyz = pdvStage.PLIXYZStage()
+        # self.thread_stagexyz = StageXYZThread(self.stage_xyz)
+        # self.thread_stagexyz.sig_stage_position.connect(self.update_position)
+        # self.thread_stagerot.start()
+        # self.thread_stagexyz.start()
 
-        # Update the controllers display
-        self.ui.groupBox_stageXYZ.show()
-        self.ui.groupBox_stageRot.show()
-
-        if hasattr(self, "thread_stagexyz"):
-            print("Exiting thread")
-            self.thread_stagexyz.stop()
-            del self.thread_stagexyz
-
-        self.stage_rot = pdvStage.PLIRotStage()
-        self.thread_stagerot = StageXYZThread(self.stage_rot)
-        self.thread_stagerot.sig_stage_position.connect(self.update_position_rot)
-        self.stage_xyz = pdvStage.PLIXYZStage()
-        self.thread_stagexyz = StageXYZThread(self.stage_xyz)
-        self.thread_stagexyz.sig_stage_position.connect(self.update_position)
-        self.thread_stagerot.start()
-        self.thread_stagexyz.start()
+        raise NotImplementedError("The PLI module is not available.")
 
     def set_microscope_as_vibratome(self):
+        try:
+            from linum_microscopes.microscopes.soct import AgilentVibratome, XYZStage, VibratomeStrategy
+        except:
+            self.update_status_and_log("The SOCT module is not available.")
+            return
         self.update_status_and_log("Setting the microscope as vibratome.")
 
         # Update the controllers display
@@ -429,10 +346,20 @@ class MainWindow(QMainWindow):
         self.ui.vibratomeTab.show()
         self.ui.groupBox_viewer.hide()
 
+        # Initialize the controllers
+        stage = XYZStage(self.config_manager.config)
+        vibratome = AgilentVibratome(self.config_manager.config)
+
+        self.stage = stage
+        self.vibratome = vibratome
+
+        # Create the strategy
+        self.strategy = VibratomeStrategy(None, vibratome, stage)
+
         # Create a vibratome controller
-        self.flag_vibratome = False
-        #self.vibratome = function_generator_jds6600.Vibratome(self.config['vibratome']['com_port'])
-        self.vibratome = vibratomeAgilent.Vibratome()
+        # self.flag_vibratome = False
+        # self.vibratome = function_generator_jds6600.Vibratome(self.config['vibratome']['com_port'])
+        # self.vibratome = AgilentVibratome(self.config_manager.config)
         self.ui.pushButton_vibratome.clicked.connect(self.start_stop_vibratome)
 
         # Initialize the values
@@ -442,7 +369,7 @@ class MainWindow(QMainWindow):
         # Connect signals and slots
         self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.valueChanged.connect(self.vibratome_update_frequency)
         self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.valueChanged.connect(self.vibratome_update_amplitude)
-        self.ui.pushButton_vibratome_stageGotoVibratome.clicked.connect(self.stage_moveToVibratome)
+        self.ui.pushButton_vibratome_stageGotoVibratome.clicked.connect(self.stage_move_to_vibratome)
         self.ui.pushButton_vibratomeCut.clicked.connect(self.vibratome_cut)
 
         # Setup the stage
@@ -451,44 +378,32 @@ class MainWindow(QMainWindow):
             self.thread_stagexyz.stop()
             del self.thread_stagexyz
 
-        self.stage_xyz = pdvStage.SOCTXYZStage()
-        self.thread_stagexyz = StageXYZThread(self.stage_xyz)
-        self.thread_stagexyz.sig_stage_position.connect(self.update_position)
-        self.thread_stagexyz.start()
+        self.strategy.stage.sig_stage_position.connect(self.update_position)
+        self.stage.thread.start()
 
     def start_stop_vibratome(self):
         if self.ui.pushButton_vibratome.isChecked():
             self.update_status_and_log("Starting the vibratome.")
-            self.vibratome.start_blade()
+            self.strategy.vibratome.start()
             self.ui.pushButton_vibratome.setText("Stop blade")
             self.ui.pushButton_vibratome.setIcon(QIcon.fromTheme(QIcon.ThemeIcon.MediaPlaybackStop))
         else:
             self.update_status_and_log("Stopping the vibratome.")
-            self.vibratome.stop_blade()
+            self.strategy.vibratome.stop()
             self.ui.pushButton_vibratome.setText("Start blade")
             self.ui.pushButton_vibratome.setIcon(QIcon.fromTheme(QIcon.ThemeIcon.MediaPlaybackStart))
-
-        self.update_vibratome_status()
 
     def vibratome_update_frequency(self):
         frequency = self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.value()
         msg = f"Setting blade frequency to {frequency} Hz"
         self.update_status_and_log(msg)
-        self.vibratome.set_frequency(frequency)
-        #self.vibratome.set_frequency(frequency, channel=2)
+        self.strategy.vibratome.frequency = frequency
 
     def vibratome_update_amplitude(self):
         amplitude = self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.value()
         msg = f"Setting amplitude to {amplitude} V"
         self.update_status_and_log(msg)
-        self.vibratome.set_amplitude(amplitude)
-
-    def update_vibratome_status(self):
-        if self.flag_vibratome:
-            status_msg = "Vibrating"
-        else:
-            status_msg = "Idle"
-        #self.ui.pushButton_vibratomeStatus.setText(status_msg)
+        self.strategy.vibratome.amplitude = amplitude
 
     def vibratome_cut(self):  # Send this to a separate thread
         self.update_status_and_log("Performing a cut", timeout=0)
@@ -498,15 +413,17 @@ class MainWindow(QMainWindow):
         self.ui.progressBar_vibratome_cutting.setValue(0)
 
         # Move the sample in front of the vibratome
-        position = np.array(self.thread_stagexyz.position)
-        pos_vibratome = np.array(self.config['soct-stage-xyz']['position_vibratome'])
+        position = np.array(self.strategy.stage.position)
+        pos_vibratome = np.array(self.config_manager.config['soct-stage-xyz']['position_vibratome'])
         cutting_length_mm = self.ui.doubleSpinBox_vibratomeCuttingLengthMm.value()
         pos_end_cut = [pos_vibratome[0], pos_vibratome[1] - cutting_length_mm]
         print(pos_end_cut)
         margin = 2.0  # mm
-        if not np.allclose(position[0:2], self.config['soct-stage-xyz']['position_vibratome']):
-            self.thread_stagexyz.move_to(z=0.0, blocking=True)  # TODO: move to safe height
-            self.thread_stagexyz.move_to(x=pos_vibratome[0], y=pos_vibratome[1], blocking=True)
+        if not np.allclose(position[0:2], self.config_manager.config['soct-stage-xyz']['position_vibratome']):
+            current_x, current_y = position[0:2]
+            x, y = pos_vibratome[0:2]
+            self.strategy.stage.move_to(current_x, current_y, z=0.0, blocking=True)  # TODO: move to safe height
+            self.strategy.stage.move_to(x=x, y=y, blocking=True)
 
         # Get the slicing information
         next_cut_z = float(self.ui.lineEdit_vibratome_nextCut_mm.text())
@@ -514,45 +431,48 @@ class MainWindow(QMainWindow):
         thickness = self.ui.doubleSpinBox_vibratomeSliceThicknessMm.value()
         pause_between_slice = self.ui.checkBox_vibratome_pauseBetweenSlice.isChecked()
         feeding_rate_mms = self.ui.doubleSpinBox_vibratomeFeedingRate_mms.value()
-        speed = feeding_rate_mms * 60  # mm per min
         cutting_heights = np.linspace(next_cut_z, next_cut_z + (n_slices - 1) * thickness, n_slices).tolist()
 
         for i in range(len(cutting_heights)):
             self.ui.progressBar_vibratome_cutting.setValue(i / len(cutting_heights) * 100)
             # Go to the front of the blade
             k = cutting_heights[i]
-            position = np.array(self.thread_stagexyz.position)
+            position = np.array(self.strategy.stage.position)
             if not np.allclose(position[0:2], pos_vibratome[0:2]):
-                self.thread_stagexyz.move_to(z=0.0, blocking=True) # TODO: move to safe height
-                self.thread_stagexyz.move_to(x=pos_vibratome[0], y=pos_vibratome[1], blocking=True)
+                current_x, current_y = position[0:2]
+                x, y = pos_vibratome[0:2]
+                self.strategy.stage.move_to(current_x, current_y, z=0.0, blocking=True)  # TODO: move to safe height
+                self.strategy.stage.move_to(x=x, y=y, blocking=True)
 
             # Move to the next cutting height
-            self.thread_stagexyz.move_to(z=k, blocking=True)
-            while not np.allclose(self.thread_stagexyz.position, [*pos_vibratome, k]):
+            current_x, current_y = self.strategy.stage.position[0:2]
+            self.strategy.stage.move_to(current_x, current_y, z=k, blocking=True)
+            while not np.allclose(self.strategy.stage.position, [*pos_vibratome, k]):
                 time.sleep(0.1)
 
             # Start the blade
-            self.vibratome.start_blade()
+            self.strategy.vibratome.start()
             time.sleep(1.0)
 
             # Start a move
-            self.thread_stagexyz.move_to(x=pos_end_cut[0], y=pos_end_cut[1], blocking=True, speed=speed)
-            while not np.allclose(self.thread_stagexyz.position, [*pos_end_cut, k]):
+            self.strategy.stage.speed = feeding_rate_mms * 60
+            self.strategy.stage.move_to(x=pos_end_cut[0], y=pos_end_cut[1], blocking=True)
+            while not np.allclose(self.strategy.stage.position, [*pos_end_cut, k]):
                 time.sleep(0.1)
 
             # Stop the blade
-            self.vibratome.stop_blade()
+            self.strategy.vibratome.stop()
             time.sleep(1.0)
 
             # Update the number of slices
             n_slices_done = int(self.ui.lineEdit_vibratome_nSlicesDone.text())
-            self.ui.lineEdit_vibratome_nSlicesDone.setText(str(n_slices_done+1))
-
+            self.ui.lineEdit_vibratome_nSlicesDone.setText(str(n_slices_done + 1))
 
             # Move down
-            safe_z = max(self.stage_xyz.position[2]-margin, 0.0)
-            #self.thread_stagexyz.move_by(dz=-margin, blocking=True)
-            self.thread_stagexyz.move_to(z=safe_z, blocking=True)
+            safe_z = max(self.strategy.stage.position[2] - margin, 0.0)
+            # self.thread_stagexyz.move_by(dz=-margin, blocking=True)
+            current_x, current_y = self.strategy.stage.position[0:2]
+            self.strategy.stage.move_to(current_x, current_y, z=safe_z, blocking=True)
 
             # Check if we need to pause between slices
             if pause_between_slice and k != cutting_heights[-1]:
@@ -570,73 +490,78 @@ class MainWindow(QMainWindow):
 
     def jog_x(self):
         distance = self.ui.doubleSpinBox_xy_jogstep_mm.value()
-        self.thread_stagexyz.move_by(dx=distance, blocking=False)
+        self.strategy.stage.move_by(dx=distance, dy=0, dz=0, blocking=False)
 
-    def reverse_jogx(self):
+    def reverse_jog_x(self):
         distance = self.ui.doubleSpinBox_xy_jogstep_mm.value()
-        self.thread_stagexyz.move_by(dx=-distance, blocking=False)
+        self.strategy.stage.move_by(dx=-distance, dy=0, dz=0, blocking=False)
 
     def jog_y(self):
         distance = self.ui.doubleSpinBox_xy_jogstep_mm.value()
-        self.thread_stagexyz.move_by(dy=distance, blocking=False)
+        self.strategy.stage.move_by(dx=0, dy=distance, dz=0, blocking=False)
 
-    def reverse_jogy(self):
+    def reverse_jog_y(self):
         distance = self.ui.doubleSpinBox_xy_jogstep_mm.value()
-        self.thread_stagexyz.move_by(dy=-distance, blocking=False)
+        self.strategy.stage.move_by(dx=0, dy=-distance, dz=0, blocking=False)
 
     def jog_z(self):
         distance = self.ui.doubleSpinBox_z_jogstep_mm.value()
-        self.thread_stagexyz.move_by(dz=distance, blocking=False)
+        self.strategy.stage.move_by(dx=0, dy=0, dz=distance, blocking=False)
 
-    def reverse_jogz(self):
+    def reverse_jog_z(self):
         distance = self.ui.doubleSpinBox_z_jogstep_mm.value()
-        self.thread_stagexyz.move_by(dz=-distance, blocking=False)
+        self.strategy.stage.move_by(dx=0, dy=0, dz=-distance, blocking=False)
 
+    # TODO: Create stage implementation for the rotational stage
     def jog_top_rot(self):
-        angle_top = self.ui.doubleSpinBox_rot_jogstep_deg.value()
-        angle_bottom = 0.0
-        if self.ui.checkBox_linkTopBottomRot.isChecked():
-            angle_bottom = angle_top
-        self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
+        # angle_top = self.ui.doubleSpinBox_rot_jogstep_deg.value()
+        # angle_bottom = 0.0
+        # if self.ui.checkBox_linkTopBottomRot.isChecked():
+        #     angle_bottom = angle_top
+        # self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
+        raise NotImplementedError("The rotational stage is not implemented.")
 
     def jog_top_rot_reverse(self):
-        angle_top = -self.ui.doubleSpinBox_rot_jogstep_deg.value()
-        angle_bottom = 0.0
-        if self.ui.checkBox_linkTopBottomRot.isChecked():
-            angle_bottom = angle_top
-        self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
+        # angle_top = -self.ui.doubleSpinBox_rot_jogstep_deg.value()
+        # angle_bottom = 0.0
+        # if self.ui.checkBox_linkTopBottomRot.isChecked():
+        #     angle_bottom = angle_top
+        # self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
+        raise NotImplementedError("The rotational stage is not implemented.")
 
     def jog_bottom_rot(self):
-        angle_bottom = self.ui.doubleSpinBox_rot_jogstep_deg.value()
-        angle_top = 0
-        if self.ui.checkBox_linkTopBottomRot.isChecked():
-            angle_top = angle_bottom
-        self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
+        # angle_bottom = self.ui.doubleSpinBox_rot_jogstep_deg.value()
+        # angle_top = 0
+        # if self.ui.checkBox_linkTopBottomRot.isChecked():
+        #     angle_top = angle_bottom
+        # self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
+        raise NotImplementedError("The rotational stage is not implemented.")
 
     def jog_bottom_rot_reverse(self):
-        angle_bottom = -self.ui.doubleSpinBox_rot_jogstep_deg.value()
-        angle_top = 0
-        if self.ui.checkBox_linkTopBottomRot.isChecked():
-            angle_top = angle_bottom
-        self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
+        # angle_bottom = -self.ui.doubleSpinBox_rot_jogstep_deg.value()
+        # angle_top = 0
+        # if self.ui.checkBox_linkTopBottomRot.isChecked():
+        #     angle_top = angle_bottom
+        # self.stage_rot.move_relative(dx=angle_top, dy=angle_bottom, blocking=False)
+        raise NotImplementedError("The rotational stage is not implemented.")
 
     def homing_xyz(self):
-        self.stage_xyz.move(z=0, blocking=True)
-        self.stage_xyz.move(x=0, y=0)
-        #self.stage_xyz.homing()
+        current_x, current_y = self.strategy.stage.position[0:2]
+        self.strategy.stage.move_to(current_x, current_y, z=0, blocking=True)
+        self.strategy.stage.move_to(x=0, y=0)
+        # self.stage_xyz.homing()
 
     def homing_rot(self):
-        self.stage_rot.homing()
+        # self.stage_rot.homing()
+        raise NotImplementedError("The rotational stage is not implemented.")
 
     def stop_moves(self):
-        if hasattr(self, "stage_xyz") and self.stage_xyz is not None:
-            self.thread_stagexyz.addAction("stage_abort")
-        if hasattr(self, "stage_rot") and self.stage_rot is not None:
-            self.stage_rot.stop()
+        if hasattr(self, "stage_xyz") and self.strategy.stage is not None:
+            self.stage.add_to_queue("abort", "abort")
 
     def acquire_image(self):
         self.update_status_and_log("Acquiring an image")
-        #img = pcoCamera.acquire_single_image()
+        # img = pcoCamera.acquire_single_image()
         img = np.random.random((100, 100))
         self.update_view(img)
         self.acquisitionStatus = True
