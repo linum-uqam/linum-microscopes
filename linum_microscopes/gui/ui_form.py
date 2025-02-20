@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'form.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.8.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -94,7 +94,7 @@ class Ui_MainWindow(object):
         self.lcdNumber_x_mm.setFrameShadow(QFrame.Shadow.Raised)
         self.lcdNumber_x_mm.setSmallDecimalPoint(False)
         self.lcdNumber_x_mm.setSegmentStyle(QLCDNumber.SegmentStyle.Flat)
-        self.lcdNumber_x_mm.setProperty("value", 0.000000000000000)
+        self.lcdNumber_x_mm.setProperty(u"value", 0.000000000000000)
 
         self.formLayout_2.setWidget(1, QFormLayout.FieldRole, self.lcdNumber_x_mm)
 
