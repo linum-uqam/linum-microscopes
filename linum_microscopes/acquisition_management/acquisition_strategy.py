@@ -7,9 +7,9 @@ from linum_microscopes.controllers.abstract_vibratome import AbstractVibratome
 
 class AcquisitionStrategy(ABC):
     running: bool = False
-    camera: AbstractCamera
-    vibratome: AbstractVibratome
-    stage: AbstractStage
+    _camera: AbstractCamera
+    _vibratome: AbstractVibratome
+    _stage: AbstractStage
 
     def __init__(self, camera: AbstractCamera, vibratome: AbstractVibratome, stage: AbstractStage):
         self.camera = camera
