@@ -1,21 +1,16 @@
 from abc import abstractmethod
 
-from PySide6.QtCore import Signal
-
 from .abstract_device import AbstractDevice
 
 
 class AbstractStage(AbstractDevice):
-    origin_position: list
+    origin_position: list = [0.0, 0.0, 0.0]
     _position: list
     _speed: float
     _acceleration: float
     _state: str
-    sig_stage_action_done = Signal(str)
-    sig_current_action = Signal(str)
-    sig_stage_position = Signal(float, float, float)
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, ):
         super().__init__(config)
 
     @property
@@ -48,11 +43,11 @@ class AbstractStage(AbstractDevice):
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def move_to(self, x: float, y: float, z: float = None, blocking: bool = False):
+    def move_to(self, x: float = None, y: float = None, z: float = None, blocking: bool = False, speed: float = 500):
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
-    def move_by(self, dx: float, dy: float, dz: float = None, blocking: bool = False):
+    def move_by(self, dx: float = None, dy: float = None, dz: float = None, blocking: bool = False, speed: float = 500):
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
