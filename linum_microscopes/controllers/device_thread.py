@@ -1,15 +1,15 @@
+import logging
 import time
 
 from PySide6.QtCore import QThread, Signal
 
-import logging
 
 class DeviceThread(QThread):
     actions: list
     frequency: float
     _busy: bool
-    sig_stage_action_done: Signal(str)
-    sig_current_action: Signal(str)
+    sig_stage_action_done: Signal = Signal(str)
+    sig_current_action: Signal = Signal(str)
 
     def __init__(self, parent=None, frequency: float = 1 / 30.0):
         super().__init__(parent=parent)
