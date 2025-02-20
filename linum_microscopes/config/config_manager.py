@@ -13,6 +13,7 @@ def initialise_logging():
 
 class ConfigManager:
     default_config_file = Path(__file__).parent.parent.parent / "config.toml"
+    config: dict
 
     def __init__(self, config_file):
         if config_file is None:
