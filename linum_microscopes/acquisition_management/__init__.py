@@ -1,2 +1,2 @@
-from acquisition_manager import AcquisitionManager
-from acquisition_strategy import AcquisitionStrategy
+from .acquisition_manager import AcquisitionManager
+from .acquisition_strategy import AcquisitionStrategy
