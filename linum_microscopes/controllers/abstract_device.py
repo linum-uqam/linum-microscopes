@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from linum_microscopes.controllers import DeviceThread
+from .device_thread import DeviceThread
 
 
 class AbstractDevice(ABC):
