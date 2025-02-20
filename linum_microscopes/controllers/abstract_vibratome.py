@@ -1,12 +1,14 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+
+from .abstract_device import AbstractDevice
 
 
-class AbstractVibratome(ABC):
+class AbstractVibratome(AbstractDevice):
     frequency: float
     amplitude: float
 
-    def __init__(self):
-        pass
+    def __init__(self, config: dict):
+        super().__init__(config)
 
     @property
     @abstractmethod

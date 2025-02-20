@@ -1,9 +1,11 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from PySide6.QtCore import Signal
 
+from .abstract_device import AbstractDevice
 
-class AbstractStage(ABC):
+
+class AbstractStage(AbstractDevice):
     origin_position: list
     _position: list
     _speed: float
@@ -13,8 +15,8 @@ class AbstractStage(ABC):
     sig_current_action = Signal(str)
     sig_stage_position = Signal(float, float, float)
 
-    def __init__(self):
-        pass
+    def __init__(self, config: dict):
+        super().__init__(config)
 
     @property
     @abstractmethod

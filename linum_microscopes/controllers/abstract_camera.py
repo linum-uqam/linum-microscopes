@@ -1,9 +1,11 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
-class AbstractCamera(ABC):
+from .abstract_device import AbstractDevice
 
-    def __init__(self):
-        pass
+class AbstractCamera(AbstractDevice):
+
+    def __init__(self, config: dict):
+        super().__init__(config)
 
     @abstractmethod
     def save_data(self):
