@@ -280,7 +280,7 @@ class MainWindow(QMainWindow):
         self.update_status_and_log("Setting the microscope as soct.")
 
         # Initialize the controllers, separate out assignment and object creation to avoid issues with type hinting
-        camera = OCTCamera()
+        camera = OCTCamera(self.config_manager.config)
         stage = XYZStage(self.config_manager.config)
         vibratome = AgilentVibratome(self.config_manager.config)
 
@@ -331,11 +331,12 @@ class MainWindow(QMainWindow):
         raise NotImplementedError("The PLI module is not available.")
 
     def set_microscope_as_vibratome(self):
-        try:
-            from linum_microscopes.microscopes.soct import AgilentVibratome, XYZStage, VibratomeStrategy
-        except:
-            self.update_status_and_log("The SOCT module is not available.")
-            return
+        # try:
+        from linum_microscopes.microscopes.soct import AgilentVibratome, XYZStage, VibratomeStrategy
+        # except:
+        #     self.update_status_and_log("The SOCT module is not available.")
+        #     self.update_status_and_log("Vibratome mode could not be loaded")
+        #     return
         self.update_status_and_log("Setting the microscope as vibratome.")
 
         # Update the controllers display
