@@ -6,7 +6,6 @@ from .abstract_device import AbstractDevice
 class AbstractStage(AbstractDevice):
     origin_position: list = [0.0, 0.0, 0.0]
     _position: list
-    _speed: float
     _acceleration: float
     _state: str
 
@@ -16,16 +15,6 @@ class AbstractStage(AbstractDevice):
     @property
     @abstractmethod
     def position(self) -> list:
-        raise NotImplementedError("Method not implemented")
-
-    @property
-    @abstractmethod
-    def speed(self) -> float:
-        raise NotImplementedError("Method not implemented")
-
-    @speed.setter
-    @abstractmethod
-    def speed(self, value: float):
         raise NotImplementedError("Method not implemented")
 
     @property
