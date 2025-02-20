@@ -5,13 +5,24 @@ from .device_thread import DeviceThread
 
 class AbstractDevice(ABC):
     connected: bool
-    thread: DeviceThread
+    _thread: DeviceThread
     config: dict
 
     def __init__(self, config: dict):
         self.connected = False
-        self.thread = DeviceThread()
         self.config = config
+        self.init_thread()
+
+    @property
+    def thread(self) -> DeviceThread:
+        return self._thread
+
+    @thread.setter
+    def thread(self, value: DeviceThread):
+        self._thread = value
+
+    def init_thread(self):
+        self._thread = DeviceThread()
 
     @abstractmethod
     def connect(self):
