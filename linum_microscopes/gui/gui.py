@@ -331,12 +331,12 @@ class MainWindow(QMainWindow):
         raise NotImplementedError("The PLI module is not available.")
 
     def set_microscope_as_vibratome(self):
-        # try:
-        from linum_microscopes.microscopes.soct import AgilentVibratome, XYZStage, VibratomeStrategy
-        # except:
-        #     self.update_status_and_log("The SOCT module is not available.")
-        #     self.update_status_and_log("Vibratome mode could not be loaded")
-        #     return
+        try:
+            from linum_microscopes.microscopes.soct import AgilentVibratome, XYZStage, VibratomeStrategy
+        except:
+            self.update_status_and_log("The SOCT module is not available.")
+            self.update_status_and_log("Vibratome mode could not be loaded")
+            return
         self.update_status_and_log("Setting the microscope as vibratome.")
 
         # Update the controllers display
@@ -348,8 +348,10 @@ class MainWindow(QMainWindow):
         self.ui.groupBox_viewer.hide()
 
         # Initialize the controllers
-        stage = XYZStage(self.config_manager.config)
         vibratome = AgilentVibratome(self.config_manager.config)
+        self.update_status_and_log("Vibratome initialized.")
+        stage = XYZStage(self.config_manager.config)
+        self.update_status_and_log("Stage initialized.")
 
         self.stage = stage
         self.vibratome = vibratome
@@ -379,7 +381,7 @@ class MainWindow(QMainWindow):
             self.thread_stagexyz.stop()
             del self.thread_stagexyz
 
-        self.strategy.stage.sig_stage_position.connect(self.update_position)
+        self.strategy.stage.thread.sig_stage_position.connect(self.update_position)
         self.stage.thread.start()
 
     def start_stop_vibratome(self):
@@ -414,16 +416,14 @@ class MainWindow(QMainWindow):
         self.ui.progressBar_vibratome_cutting.setValue(0)
 
         # Move the sample in front of the vibratome
-        position = np.array(self.strategy.stage.position)
+        position = np.array(self.strategy.stage.thread.position)
         pos_vibratome = np.array(self.config_manager.config['soct-stage-xyz']['position_vibratome'])
         cutting_length_mm = self.ui.doubleSpinBox_vibratomeCuttingLengthMm.value()
         pos_end_cut = [pos_vibratome[0], pos_vibratome[1] - cutting_length_mm]
-        print(pos_end_cut)
         margin = 2.0  # mm
         if not np.allclose(position[0:2], self.config_manager.config['soct-stage-xyz']['position_vibratome']):
-            current_x, current_y = position[0:2]
             x, y = pos_vibratome[0:2]
-            self.strategy.stage.move_to(current_x, current_y, z=0.0, blocking=True)  # TODO: move to safe height
+            self.strategy.stage.move_to(z=0.0, blocking=True)  # TODO: move to safe height
             self.strategy.stage.move_to(x=x, y=y, blocking=True)
 
         # Get the slicing information
@@ -432,23 +432,22 @@ class MainWindow(QMainWindow):
         thickness = self.ui.doubleSpinBox_vibratomeSliceThicknessMm.value()
         pause_between_slice = self.ui.checkBox_vibratome_pauseBetweenSlice.isChecked()
         feeding_rate_mms = self.ui.doubleSpinBox_vibratomeFeedingRate_mms.value()
+        speed = feeding_rate_mms * 60
         cutting_heights = np.linspace(next_cut_z, next_cut_z + (n_slices - 1) * thickness, n_slices).tolist()
 
         for i in range(len(cutting_heights)):
             self.ui.progressBar_vibratome_cutting.setValue(i / len(cutting_heights) * 100)
             # Go to the front of the blade
             k = cutting_heights[i]
-            position = np.array(self.strategy.stage.position)
+            position = np.array(self.strategy.stage.thread.position)
             if not np.allclose(position[0:2], pos_vibratome[0:2]):
-                current_x, current_y = position[0:2]
                 x, y = pos_vibratome[0:2]
-                self.strategy.stage.move_to(current_x, current_y, z=0.0, blocking=True)  # TODO: move to safe height
+                self.strategy.stage.move_to(z=0.0, blocking=True)  # TODO: move to safe height
                 self.strategy.stage.move_to(x=x, y=y, blocking=True)
 
             # Move to the next cutting height
-            current_x, current_y = self.strategy.stage.position[0:2]
-            self.strategy.stage.move_to(current_x, current_y, z=k, blocking=True)
-            while not np.allclose(self.strategy.stage.position, [*pos_vibratome, k]):
+            self.strategy.stage.move_to(z=k, blocking=True)
+            while not np.allclose(self.strategy.stage.thread.position, [*pos_vibratome, k]):
                 time.sleep(0.1)
 
             # Start the blade
@@ -456,9 +455,8 @@ class MainWindow(QMainWindow):
             time.sleep(1.0)
 
             # Start a move
-            self.strategy.stage.speed = feeding_rate_mms * 60
-            self.strategy.stage.move_to(x=pos_end_cut[0], y=pos_end_cut[1], blocking=True)
-            while not np.allclose(self.strategy.stage.position, [*pos_end_cut, k]):
+            self.strategy.stage.move_to(x=pos_end_cut[0], y=pos_end_cut[1], blocking=True, speed=speed)
+            while not np.allclose(self.strategy.stage.thread.position, [*pos_end_cut, k]):
                 time.sleep(0.1)
 
             # Stop the blade
@@ -472,8 +470,7 @@ class MainWindow(QMainWindow):
             # Move down
             safe_z = max(self.strategy.stage.position[2] - margin, 0.0)
             # self.thread_stagexyz.move_by(dz=-margin, blocking=True)
-            current_x, current_y = self.strategy.stage.position[0:2]
-            self.strategy.stage.move_to(current_x, current_y, z=safe_z, blocking=True)
+            self.strategy.stage.move_to(z=safe_z, blocking=True)
 
             # Check if we need to pause between slices
             if pause_between_slice and k != cutting_heights[-1]:
