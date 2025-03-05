@@ -2,3 +2,8 @@ numpy
 pyside6
 pyqtgraph
 PyQtDarkTheme
+pyserial
+tomli
+tqdm
+pyfirmata2
+pymeasure
