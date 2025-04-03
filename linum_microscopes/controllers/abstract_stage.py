@@ -7,7 +7,10 @@ class AbstractStage(AbstractDevice):
     origin_position: list = [0.0, 0.0, 0.0]
     _position: list
     _acceleration: float
+    _speed: float
     _state: str
+    _max_position: list
+
 
     def __init__(self, config: dict, ):
         super().__init__(config)
@@ -25,6 +28,21 @@ class AbstractStage(AbstractDevice):
     @acceleration.setter
     @abstractmethod
     def acceleration(self, value: float):
+        raise NotImplementedError("Method not implemented")
+
+    @property
+    @abstractmethod
+    def speed(self) -> float:
+        raise NotImplementedError("Method not implemented")
+
+    @speed.setter
+    @abstractmethod
+    def speed(self, value: float):
+        raise NotImplementedError("Method not implemented")
+
+    @property
+    @abstractmethod
+    def max_position(self) -> list:
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
