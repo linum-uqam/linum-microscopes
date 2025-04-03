@@ -8,11 +8,11 @@ import pyqtgraph as pg
 import qdarktheme
 from PySide6 import QtCore
 from PySide6.QtGui import QPixmap, QActionGroup, QIcon
-from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QDialogButtonBox, QVBoxLayout, QLabel
+from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QFileDialog
 
-from linum_microscopes.acquisition_management import AcquisitionStrategy
 from linum_microscopes.config import ConfigManager, initialise_logging
 from linum_microscopes.controllers import AbstractDevice
+from linum_microscopes.microscopes.soct import SOCTStrategy
 # Important:
 # You need to run the following command to generate the ui_form.py file
 #     pyside6-uic form.ui -o ui_form.py, or
@@ -74,7 +74,7 @@ class MainWindow(QMainWindow):
     # AcquisitionStrategy houses the functionality of the different devices.
     # For proper type hinting, use the device for interacting with the class and use strategy.device
     # for calling device functionality
-    strategy: AcquisitionStrategy
+    strategy: SOCTStrategy
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -139,7 +139,10 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_pliRot_home.clicked.connect(self.homing_rot)
 
         # Camera Actions
+        self.ui.pushButton_directory.clicked.connect(self.select_acquisition_directory)
         self.ui.pushButton_camera_acquire.clicked.connect(self.acquire_image)
+        self.ui.spinBox_no_slices.valueChanged.connect(self.update_vibratome_slices_spinbox)
+        self.ui.pushButton_update_mosaic.clicked.connect(self.update_soct_parameters)
 
         # Hide some panels if not used
         self.ui.groupBox_stageXYZ.hide()
@@ -151,6 +154,7 @@ class MainWindow(QMainWindow):
         self.ui.actionShow_advanded_vibratome_parameters.changed.connect(self.update_vibratome_parameters)
         self.ui.checkBox_vibratome_firstCutAtCurrentHeight.clicked.connect(self.update_vibratome_parameters)
         self.ui.progressBar_vibratome_cutting.setValue(0)
+        self.ui.spinBox_vibratome_nSlices.valueChanged.connect(self.update_camera_slices_spinbox)
 
         # Setup vibratome settings
         self.ui.doubleSpinBox_vibratomeCuttingLengthMm.setValue(
@@ -164,6 +168,8 @@ class MainWindow(QMainWindow):
             self.config_manager.config['vibratome']['cutting_amplitude'])
         self.ui.actionSet_current_position_as_vibratome_position.triggered.connect(self.update_vibratome_position)
         self.update_vibratome_parameters()
+
+        self.ui.actionSet_current_z_as_focus_height.triggered.connect(self.set_focus_height)
 
     def init_viewer(self):
         # Initialize the image viewer
@@ -185,6 +191,14 @@ class MainWindow(QMainWindow):
     def update_status_and_log(self, msg, timeout: int = 5000):
         logging.info(msg)
         self.ui.statusbar.showMessage(msg, timeout=timeout)
+
+    def update_vibratome_slices_spinbox(self):
+        value = self.ui.spinBox_no_slices.value()
+        self.ui.spinBox_vibratome_nSlices.setValue(value)
+
+    def update_camera_slices_spinbox(self):
+        value = self.ui.spinBox_vibratome_nSlices.value()
+        self.ui.spinBox_no_slices.setValue(value)
 
     def update_image(self, image):
         self.image = image
@@ -279,33 +293,40 @@ class MainWindow(QMainWindow):
 
         self.update_status_and_log("Setting the microscope as soct.")
 
-        # Initialize the controllers, separate out assignment and object creation to avoid issues with type hinting
-        camera = OCTCamera(self.config_manager.config)
-        stage = XYZStage(self.config_manager.config)
+        # Initialize the controllers
         vibratome = AgilentVibratome(self.config_manager.config)
+        self.update_status_and_log("Vibratome initialized.")
+        stage = XYZStage(self.config_manager.config)
+        self.update_status_and_log("Stage initialized.")
+        camera = OCTCamera(self.config_manager.config)
+        self.update_status_and_log("Camera initialized.")
 
-        self.camera = camera
-        self.stage = stage
         self.vibratome = vibratome
+        self.stage = stage
+        self.camera = camera
 
         # Create the strategy
-        self.strategy = SOCTStrategy(camera, vibratome, stage)
+        self.strategy = SOCTStrategy(camera, vibratome, stage, self.config_manager.config)
 
         # Display the XYZ Stage Control
         self.ui.groupBox_stageXYZ.show()
         self.ui.groupBox_stageRot.hide()
 
-        if hasattr(self, "thread_stagexyz"):
-            print("Exiting the thread")
-            self.thread_stagexyz.stop()
-            del self.thread_stagexyz
+        # Initialize the values
+        self.vibratome_update_frequency()
+        self.vibratome_update_amplitude()
+
+        # Connect signals and slots
+        self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.valueChanged.connect(self.vibratome_update_frequency)
+        self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.valueChanged.connect(self.vibratome_update_amplitude)
+        self.ui.pushButton_vibratome_stageGotoVibratome.clicked.connect(self.stage_move_to_vibratome)
+        self.ui.pushButton_vibratomeCut.clicked.connect(self.vibratome_cut)
 
         # Connect the stage to the thread
-        self.strategy.stage.sig_stage_position.connect(self.update_position)
-        self.stage.thread.run()
+        self.strategy.stage.thread.sig_stage_position.connect(self.update_position)
+        self.stage.thread.start()
 
-        # Hide the rotation control
-        # self.ui.
+        self.strategy.thread.start()
 
     def set_microscope_as_pli(self):
         # self.update_status_and_log("Setting the microscope as PLI.")
@@ -360,9 +381,6 @@ class MainWindow(QMainWindow):
         self.strategy = VibratomeStrategy(None, vibratome, stage)
 
         # Create a vibratome controller
-        # self.flag_vibratome = False
-        # self.vibratome = function_generator_jds6600.Vibratome(self.config['vibratome']['com_port'])
-        # self.vibratome = AgilentVibratome(self.config_manager.config)
         self.ui.pushButton_vibratome.clicked.connect(self.start_stop_vibratome)
 
         # Initialize the values
@@ -374,12 +392,6 @@ class MainWindow(QMainWindow):
         self.ui.doubleSpinBox_vibratomeBladeAmplitudeV.valueChanged.connect(self.vibratome_update_amplitude)
         self.ui.pushButton_vibratome_stageGotoVibratome.clicked.connect(self.stage_move_to_vibratome)
         self.ui.pushButton_vibratomeCut.clicked.connect(self.vibratome_cut)
-
-        # Setup the stage
-        if hasattr(self, "thread_stagexyz"):
-            print("Exiting the thread")
-            self.thread_stagexyz.stop()
-            del self.thread_stagexyz
 
         self.strategy.stage.thread.sig_stage_position.connect(self.update_position)
         self.stage.thread.start()
@@ -559,11 +571,99 @@ class MainWindow(QMainWindow):
 
     def acquire_image(self):
         self.update_status_and_log("Acquiring an image")
+        if self.strategy == None:
+            self.update_status_and_log("No camera connected.")
+            return
         # img = pcoCamera.acquire_single_image()
-        img = np.random.random((100, 100))
-        self.update_view(img)
-        self.acquisitionStatus = True
-        self.timer.start()
+        if self.strategy.data_path is None:
+            self.update_status_and_log("No acquisition directory set.")
+            return
+
+        detect_roi = self.ui.checkBox_update_roi
+        cut_last_slice = self.ui.checkBox_cut_last_slice
+        n_slices = self.ui.spinBox_no_slices.value()
+
+        self.strategy.update_roi = detect_roi.isChecked()
+        self.strategy.cut_last_slice = cut_last_slice.isChecked()
+        self.strategy.n_slices = n_slices
+
+        # Take an image
+        self.strategy.execute_strategy()
+        #
+        # img = np.random.random((100, 100))
+        # self.update_view(img)
+        # self.acquisitionStatus = True
+        # self.timer.start()
+
+    def select_acquisition_directory(self):
+        directory = QFileDialog.getExistingDirectory(self, "Select directory")
+        if directory:
+            self.strategy.initialise_data_path(directory)
+            self.ui.lineEdit_directory.setText(directory)
+            self.update_status_and_log(f"Acquisition directory set to {directory}")
+
+    def ui_update_soct_parameters(self):
+        # Mosaic Parameters
+        self.ui.doubleSpinBox_x_min_mm_2.setValue(self.strategy.mosaic_xmin_mm)
+        self.ui.doubleSpinBox_x_max_mm_2.setValue(self.strategy.mosaic_xmax_mm)
+        self.ui.doubleSpinBox_y_min_mm_2.setValue(self.strategy.mosaic_ymin_mm)
+        self.ui.doubleSpinBox_y_max_mm_2.setValue(self.strategy.mosaic_ymax_mm)
+        self.ui.spinBox_z_min_px_2.setValue(self.strategy.z_min)
+        self.ui.spinBox_z_max_px_2.setValue(self.strategy.z_max)
+        self.ui.doubleSpinBox_size_um_2.setValue(self.strategy.tile_size_um)
+        self.ui.doubleSpinBox_overlap_2.setValue(self.strategy.overlap_fraction)
+        self.ui.doubleSpinBox_wait_time_2.setValue(self.strategy.tile_wait_time)
+
+        # Slicing parameters
+        self.ui.doubleSpinBox_vibratomeSliceThicknessMm.setValue(self.strategy.slice_thickness)
+        n_slices = self.ui.spinBox_no_slices.value()
+        self.ui.lineEdit_vibratome_nextTotalThickness_mm.setText(str(self.strategy.slice_thickness * n_slices))
+        self.ui.doubleSpinBox_previous_cut.setValue(self.strategy.previous_cutting_height)
+        self.ui.lineEdit_vibratome_previousCut_mm.setText(str(self.strategy.previous_cutting_height))
+        self.ui.doubleSpinBox_next_cut.setValue(self.strategy.next_cutting_height)
+        self.ui.lineEdit_vibratome_nextCut_mm.setText(str(self.strategy.next_cutting_height))
+
+        # Update the mosaic progression and tile information
+        self.ui.spinBox_mosaic_x_2.setValue(self.strategy.mosaic_shape_nx)
+        self.ui.spinBox_mosaic_y_2.setValue(self.strategy.mosaic_shape_ny)
+        self.ui.doubleSpinBox_mosaic_x_mm.setValue(self.strategy.mosaic_width_mm)
+        self.ui.doubleSpinBox_mosaic_y_mm.setValue(self.strategy.mosaic_height_mm)
+        self.ui.spinBox_current_x.setValue(self.strategy.mx)
+        self.ui.spinBox_current_y.setValue(self.strategy.my)
+        self.ui.spinBox_current_z.setValue(self.strategy.current_slice)
+        self.ui.doubleSpinBox_focus_height.setValue(self.strategy.focus_height)
+
+    def update_soct_parameters(self):
+        try:
+            # Mosaic Parameters
+            self.strategy.tile_size_um = self.ui.doubleSpinBox_size_um_2.value()
+            self.strategy.n_slices = self.ui.spinBox_no_slices.value()
+            self.strategy.overlap_fraction = self.ui.doubleSpinBox_overlap_2.value()
+            self.strategy.z_min = self.ui.spinBox_z_min_px_2.value()
+            self.strategy.z_max = self.ui.spinBox_z_max_px_2.value()
+            self.strategy.tile_wait_time = self.ui.doubleSpinBox_wait_time_2.value()
+            xmin = self.ui.doubleSpinBox_x_min_mm_2.value()
+            xmax = self.ui.doubleSpinBox_x_max_mm_2.value()
+            ymin = self.ui.doubleSpinBox_y_min_mm_2.value()
+            ymax = self.ui.doubleSpinBox_y_max_mm_2.value()
+            self.strategy.set_mosaic_parameters(xmin, xmax, ymin, ymax)
+            # sbh.stage_xy.speed_x = self.ui.doubleSpinBox_stage_xy_speed.value()
+            # sbh.stage_xy.speed_y = self.ui.doubleSpinBox_stage_xy_speed.value()
+
+            # Slicing parameters
+            self.strategy.slice_thickness = self.ui.doubleSpinBox_vibratomeSliceThicknessMm.value()
+            self.vibratome.cutting_frequency = self.ui.doubleSpinBox_vibratomeBladeFrequencyHz.value()
+            self.config_manager.config["vibratome"]["feeding_rate"] = self.ui.doubleSpinBox_vibratomeFeedingRate_mms.value()
+            self.vibratome.cutting_distance = self.ui.doubleSpinBox_vibratomeCuttingLengthMm.value()
+
+            # Update the UI
+            self.ui_update_soct_parameters()
+        except Exception as e:
+            print("Exception (update_soct_parameters): ", e)
+
+    def set_focus_height(self):
+        """Set the focus height"""
+        self.strategy.focus_height = self.strategy.stage.position[2]
 
     # @property
     # def safe_z(self) -> float: # TODO: implement the safe move height logic.
