@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 from linum_microscopes.controllers.abstract_camera import AbstractCamera
 from linum_microscopes.controllers.abstract_stage import AbstractStage
@@ -6,15 +7,12 @@ from linum_microscopes.controllers.abstract_vibratome import AbstractVibratome
 
 
 class AcquisitionStrategy(ABC):
-    running: bool = False
-    _camera: AbstractCamera
-    _vibratome: AbstractVibratome
-    _stage: AbstractStage
+    _data_path: Path = None
 
     def __init__(self, camera: AbstractCamera, vibratome: AbstractVibratome, stage: AbstractStage):
-        self.camera = camera
-        self.vibratome = vibratome
-        self.stage = stage
+        self._camera = camera
+        self._vibratome = vibratome
+        self._stage = stage
 
     @property
     @abstractmethod
@@ -33,7 +31,7 @@ class AcquisitionStrategy(ABC):
 
     @vibratome.setter
     @abstractmethod
-    def vibratome(self, value:AbstractVibratome):
+    def vibratome(self, value: AbstractVibratome):
         raise NotImplementedError("Property not implemented")
 
     @property
@@ -55,8 +53,26 @@ class AcquisitionStrategy(ABC):
         raise NotImplementedError("Method not implemented")
 
     @abstractmethod
+    def single_acquisition(self):
+        raise NotImplementedError("Method not implemented")
+
+    @abstractmethod
     def stop(self):
         raise NotImplementedError("Method not implemented")
+
+    @abstractmethod
+    def initialise_data_path(self, path: str | Path):
+        raise NotImplementedError("Method not implemented")
+
+    @property
+    def data_path(self) -> Path:
+        return self._data_path
+
+    @data_path.setter
+    def data_path(self, value: str | Path):
+        if isinstance(value, str):
+            value = Path(value)
+        self._data_path = value
 
     def is_running(self):
         return self.running
