@@ -217,6 +217,10 @@ class MainWindow(QMainWindow):
         if self.ui.checkBox_vibratome_firstCutAtCurrentHeight.isChecked():
             self.update_vibratome_parameters()
 
+    def update_camera_view(self, image):
+        self.update_image(image)
+        self.update_view(image)
+
     def update_position_rot(self, rot_top, rot_bottom, z):
         self.ui.lcdNumber_rotTop.display(rot_top)
         self.ui.lcdNumber_rotBottom.display(rot_bottom)
@@ -325,6 +329,10 @@ class MainWindow(QMainWindow):
         # Connect the stage to the thread
         self.strategy.stage.thread.sig_stage_position.connect(self.update_position)
         self.stage.thread.start()
+
+        # Connect live view camera
+        self.strategy.wide_field_camera.thread.sig_live_camera.connect(self.update_camera_view)
+        self.strategy.wide_field_camera.thread.start()
 
         self.strategy.thread.start()
 
