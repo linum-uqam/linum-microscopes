@@ -8,9 +8,9 @@ axis_direction = 0 # XYZmask, int(0b000)
 x_axis_max_position = 80.0 # Adding 2 for the homing shift
 y_axis_max_position = 82.0 # Adding 2 for the homing shift
 z_axis_max_position = 30.5 # Adding 2 for the homing shift
-position_objective = [22.5, 46.0]
-position_vibratome = [74, 40]
-position_afterCut = [74, 19]
+position_objective = [21.5, 45.0]
+position_vibratome = [70, 40]
+position_afterCut = [70, 10]
 position_maintenance = [0.0, 0.0, 0.0]
 x_acceleration = 10.0 # mm/s^2
 y_acceleration = 10.0 # mm/s^2
@@ -36,7 +36,7 @@ axis_direction = 3 #3,  XYZmask, int(0b011)
 
 [vibratome]
 serial_port = "USB0::0x0957::0x0407::MY44013298::INSTR"
-cutting_frequency = 169  # Hz.
+cutting_frequency = 165  # Hz.
 cutting_amplitude = 5.0 # V
 min_frequency = 30 # HZ
 max_frequency = 200 # Hz
