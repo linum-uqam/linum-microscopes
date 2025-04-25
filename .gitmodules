@@ -1,0 +1,3 @@
+[submodule "linum_microscopes/microscopes/soct"]
+	path = linum_microscopes/microscopes/soct
+	url = git@github.com:linum-uqam/linum-microscopes-soct.git

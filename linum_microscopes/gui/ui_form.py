@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'form.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.8.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -28,7 +28,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(800, 850)
+        MainWindow.resize(800, 1103)
         self.actionDark_mode = QAction(MainWindow)
         self.actionDark_mode.setObjectName(u"actionDark_mode")
         self.actionPLI_Polarized_Light_Imaging = QAction(MainWindow)
@@ -58,13 +58,16 @@ class Ui_MainWindow(object):
         self.actionXYZ_Stage.setEnabled(False)
         self.actionSet_current_position_as_vibratome_position = QAction(MainWindow)
         self.actionSet_current_position_as_vibratome_position.setObjectName(u"actionSet_current_position_as_vibratome_position")
+        self.actionSet_current_z_as_focus_height = QAction(MainWindow)
+        self.actionSet_current_z_as_focus_height.setObjectName(u"actionSet_current_z_as_focus_height")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
-        self.tabWidget.setMaximumSize(QSize(300, 16777215))
+        self.tabWidget.setMinimumSize(QSize(325, 0))
+        self.tabWidget.setMaximumSize(QSize(325, 16777215))
         self.StageTab = QWidget()
         self.StageTab.setObjectName(u"StageTab")
         self.verticalLayout_2 = QVBoxLayout(self.StageTab)
@@ -94,7 +97,7 @@ class Ui_MainWindow(object):
         self.lcdNumber_x_mm.setFrameShadow(QFrame.Shadow.Raised)
         self.lcdNumber_x_mm.setSmallDecimalPoint(False)
         self.lcdNumber_x_mm.setSegmentStyle(QLCDNumber.SegmentStyle.Flat)
-        self.lcdNumber_x_mm.setProperty("value", 0.000000000000000)
+        self.lcdNumber_x_mm.setProperty(u"value", 0.000000000000000)
 
         self.formLayout_2.setWidget(1, QFormLayout.FieldRole, self.lcdNumber_x_mm)
 
@@ -358,10 +361,298 @@ class Ui_MainWindow(object):
         self.CameraTab.setObjectName(u"CameraTab")
         self.verticalLayout_5 = QVBoxLayout(self.CameraTab)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.pushButton_camera_acquire = QPushButton(self.CameraTab)
+        self.groupBox_data = QGroupBox(self.CameraTab)
+        self.groupBox_data.setObjectName(u"groupBox_data")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.groupBox_data.sizePolicy().hasHeightForWidth())
+        self.groupBox_data.setSizePolicy(sizePolicy)
+        self.verticalLayout_7 = QVBoxLayout(self.groupBox_data)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.pushButton_directory = QPushButton(self.groupBox_data)
+        self.pushButton_directory.setObjectName(u"pushButton_directory")
+
+        self.verticalLayout_7.addWidget(self.pushButton_directory)
+
+        self.lineEdit_directory = QLineEdit(self.groupBox_data)
+        self.lineEdit_directory.setObjectName(u"lineEdit_directory")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.lineEdit_directory.sizePolicy().hasHeightForWidth())
+        self.lineEdit_directory.setSizePolicy(sizePolicy1)
+        self.lineEdit_directory.setReadOnly(True)
+
+        self.verticalLayout_7.addWidget(self.lineEdit_directory)
+
+
+        self.verticalLayout_5.addWidget(self.groupBox_data)
+
+        self.groupBox_mosaic = QGroupBox(self.CameraTab)
+        self.groupBox_mosaic.setObjectName(u"groupBox_mosaic")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.groupBox_mosaic.sizePolicy().hasHeightForWidth())
+        self.groupBox_mosaic.setSizePolicy(sizePolicy2)
+        self.groupBox_mosaic.setFlat(False)
+        self.formLayout_6 = QFormLayout(self.groupBox_mosaic)
+        self.formLayout_6.setObjectName(u"formLayout_6")
+        self.label_36 = QLabel(self.groupBox_mosaic)
+        self.label_36.setObjectName(u"label_36")
+
+        self.formLayout_6.setWidget(0, QFormLayout.LabelRole, self.label_36)
+
+        self.doubleSpinBox_x_min_mm_2 = QDoubleSpinBox(self.groupBox_mosaic)
+        self.doubleSpinBox_x_min_mm_2.setObjectName(u"doubleSpinBox_x_min_mm_2")
+        self.doubleSpinBox_x_min_mm_2.setDecimals(3)
+
+        self.formLayout_6.setWidget(0, QFormLayout.FieldRole, self.doubleSpinBox_x_min_mm_2)
+
+        self.doubleSpinBox_x_max_mm_2 = QDoubleSpinBox(self.groupBox_mosaic)
+        self.doubleSpinBox_x_max_mm_2.setObjectName(u"doubleSpinBox_x_max_mm_2")
+        self.doubleSpinBox_x_max_mm_2.setDecimals(3)
+
+        self.formLayout_6.setWidget(1, QFormLayout.FieldRole, self.doubleSpinBox_x_max_mm_2)
+
+        self.label_37 = QLabel(self.groupBox_mosaic)
+        self.label_37.setObjectName(u"label_37")
+
+        self.formLayout_6.setWidget(2, QFormLayout.LabelRole, self.label_37)
+
+        self.doubleSpinBox_y_min_mm_2 = QDoubleSpinBox(self.groupBox_mosaic)
+        self.doubleSpinBox_y_min_mm_2.setObjectName(u"doubleSpinBox_y_min_mm_2")
+        self.doubleSpinBox_y_min_mm_2.setDecimals(3)
+
+        self.formLayout_6.setWidget(2, QFormLayout.FieldRole, self.doubleSpinBox_y_min_mm_2)
+
+        self.doubleSpinBox_y_max_mm_2 = QDoubleSpinBox(self.groupBox_mosaic)
+        self.doubleSpinBox_y_max_mm_2.setObjectName(u"doubleSpinBox_y_max_mm_2")
+        self.doubleSpinBox_y_max_mm_2.setDecimals(3)
+
+        self.formLayout_6.setWidget(3, QFormLayout.FieldRole, self.doubleSpinBox_y_max_mm_2)
+
+        self.label_38 = QLabel(self.groupBox_mosaic)
+        self.label_38.setObjectName(u"label_38")
+
+        self.formLayout_6.setWidget(4, QFormLayout.LabelRole, self.label_38)
+
+        self.spinBox_z_min_px_2 = QSpinBox(self.groupBox_mosaic)
+        self.spinBox_z_min_px_2.setObjectName(u"spinBox_z_min_px_2")
+        self.spinBox_z_min_px_2.setValue(1)
+
+        self.formLayout_6.setWidget(4, QFormLayout.FieldRole, self.spinBox_z_min_px_2)
+
+        self.spinBox_z_max_px_2 = QSpinBox(self.groupBox_mosaic)
+        self.spinBox_z_max_px_2.setObjectName(u"spinBox_z_max_px_2")
+        self.spinBox_z_max_px_2.setValue(1)
+
+        self.formLayout_6.setWidget(5, QFormLayout.FieldRole, self.spinBox_z_max_px_2)
+
+        self.label_39 = QLabel(self.groupBox_mosaic)
+        self.label_39.setObjectName(u"label_39")
+
+        self.formLayout_6.setWidget(6, QFormLayout.LabelRole, self.label_39)
+
+        self.doubleSpinBox_size_um_2 = QDoubleSpinBox(self.groupBox_mosaic)
+        self.doubleSpinBox_size_um_2.setObjectName(u"doubleSpinBox_size_um_2")
+        self.doubleSpinBox_size_um_2.setDecimals(2)
+        self.doubleSpinBox_size_um_2.setMaximum(2000.000000000000000)
+        self.doubleSpinBox_size_um_2.setValue(750.000000000000000)
+
+        self.formLayout_6.setWidget(6, QFormLayout.FieldRole, self.doubleSpinBox_size_um_2)
+
+        self.spinBox_size_pixel_2 = QSpinBox(self.groupBox_mosaic)
+        self.spinBox_size_pixel_2.setObjectName(u"spinBox_size_pixel_2")
+
+        self.formLayout_6.setWidget(7, QFormLayout.FieldRole, self.spinBox_size_pixel_2)
+
+        self.label_40 = QLabel(self.groupBox_mosaic)
+        self.label_40.setObjectName(u"label_40")
+
+        self.formLayout_6.setWidget(8, QFormLayout.LabelRole, self.label_40)
+
+        self.doubleSpinBox_overlap_2 = QDoubleSpinBox(self.groupBox_mosaic)
+        self.doubleSpinBox_overlap_2.setObjectName(u"doubleSpinBox_overlap_2")
+        self.doubleSpinBox_overlap_2.setMaximum(1.000000000000000)
+        self.doubleSpinBox_overlap_2.setSingleStep(0.010000000000000)
+        self.doubleSpinBox_overlap_2.setValue(0.020000000000000)
+
+        self.formLayout_6.setWidget(8, QFormLayout.FieldRole, self.doubleSpinBox_overlap_2)
+
+        self.label_41 = QLabel(self.groupBox_mosaic)
+        self.label_41.setObjectName(u"label_41")
+
+        self.formLayout_6.setWidget(9, QFormLayout.LabelRole, self.label_41)
+
+        self.doubleSpinBox_wait_time_2 = QDoubleSpinBox(self.groupBox_mosaic)
+        self.doubleSpinBox_wait_time_2.setObjectName(u"doubleSpinBox_wait_time_2")
+
+        self.formLayout_6.setWidget(9, QFormLayout.FieldRole, self.doubleSpinBox_wait_time_2)
+
+        self.label_42 = QLabel(self.groupBox_mosaic)
+        self.label_42.setObjectName(u"label_42")
+
+        self.formLayout_6.setWidget(10, QFormLayout.LabelRole, self.label_42)
+
+        self.spinBox_mosaic_x_2 = QSpinBox(self.groupBox_mosaic)
+        self.spinBox_mosaic_x_2.setObjectName(u"spinBox_mosaic_x_2")
+        self.spinBox_mosaic_x_2.setEnabled(False)
+        self.spinBox_mosaic_x_2.setAutoFillBackground(False)
+        self.spinBox_mosaic_x_2.setReadOnly(True)
+
+        self.formLayout_6.setWidget(10, QFormLayout.FieldRole, self.spinBox_mosaic_x_2)
+
+        self.spinBox_mosaic_y_2 = QSpinBox(self.groupBox_mosaic)
+        self.spinBox_mosaic_y_2.setObjectName(u"spinBox_mosaic_y_2")
+        self.spinBox_mosaic_y_2.setEnabled(False)
+        self.spinBox_mosaic_y_2.setReadOnly(True)
+
+        self.formLayout_6.setWidget(11, QFormLayout.FieldRole, self.spinBox_mosaic_y_2)
+
+        self.label_43 = QLabel(self.groupBox_mosaic)
+        self.label_43.setObjectName(u"label_43")
+
+        self.formLayout_6.setWidget(12, QFormLayout.LabelRole, self.label_43)
+
+        self.doubleSpinBox_mosaic_x_mm = QDoubleSpinBox(self.groupBox_mosaic)
+        self.doubleSpinBox_mosaic_x_mm.setObjectName(u"doubleSpinBox_mosaic_x_mm")
+        self.doubleSpinBox_mosaic_x_mm.setEnabled(False)
+        self.doubleSpinBox_mosaic_x_mm.setReadOnly(True)
+        self.doubleSpinBox_mosaic_x_mm.setDecimals(3)
+        self.doubleSpinBox_mosaic_x_mm.setMaximum(1000.000000000000000)
+
+        self.formLayout_6.setWidget(12, QFormLayout.FieldRole, self.doubleSpinBox_mosaic_x_mm)
+
+        self.doubleSpinBox_mosaic_y_mm = QDoubleSpinBox(self.groupBox_mosaic)
+        self.doubleSpinBox_mosaic_y_mm.setObjectName(u"doubleSpinBox_mosaic_y_mm")
+        self.doubleSpinBox_mosaic_y_mm.setEnabled(False)
+        self.doubleSpinBox_mosaic_y_mm.setReadOnly(True)
+        self.doubleSpinBox_mosaic_y_mm.setDecimals(3)
+        self.doubleSpinBox_mosaic_y_mm.setMaximum(1000.000000000000000)
+
+        self.formLayout_6.setWidget(13, QFormLayout.FieldRole, self.doubleSpinBox_mosaic_y_mm)
+
+        self.pushButton_update_mosaic = QPushButton(self.groupBox_mosaic)
+        self.pushButton_update_mosaic.setObjectName(u"pushButton_update_mosaic")
+
+        self.formLayout_6.setWidget(14, QFormLayout.SpanningRole, self.pushButton_update_mosaic)
+
+
+        self.verticalLayout_5.addWidget(self.groupBox_mosaic)
+
+        self.groupBox_info = QGroupBox(self.CameraTab)
+        self.groupBox_info.setObjectName(u"groupBox_info")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.groupBox_info.sizePolicy().hasHeightForWidth())
+        self.groupBox_info.setSizePolicy(sizePolicy3)
+        self.gridLayout_4 = QGridLayout(self.groupBox_info)
+        self.gridLayout_4.setObjectName(u"gridLayout_4")
+        self.spinBox_current_x = QSpinBox(self.groupBox_info)
+        self.spinBox_current_x.setObjectName(u"spinBox_current_x")
+        self.spinBox_current_x.setEnabled(False)
+        self.spinBox_current_x.setReadOnly(True)
+
+        self.gridLayout_4.addWidget(self.spinBox_current_x, 1, 0, 1, 2)
+
+        self.label_47 = QLabel(self.groupBox_info)
+        self.label_47.setObjectName(u"label_47")
+
+        self.gridLayout_4.addWidget(self.label_47, 6, 0, 1, 1)
+
+        self.doubleSpinBox_focus_height = QDoubleSpinBox(self.groupBox_info)
+        self.doubleSpinBox_focus_height.setObjectName(u"doubleSpinBox_focus_height")
+        self.doubleSpinBox_focus_height.setEnabled(False)
+        self.doubleSpinBox_focus_height.setReadOnly(True)
+        self.doubleSpinBox_focus_height.setDecimals(3)
+
+        self.gridLayout_4.addWidget(self.doubleSpinBox_focus_height, 3, 2, 1, 2)
+
+        self.label_45 = QLabel(self.groupBox_info)
+        self.label_45.setObjectName(u"label_45")
+
+        self.gridLayout_4.addWidget(self.label_45, 2, 0, 1, 2)
+
+        self.label_44 = QLabel(self.groupBox_info)
+        self.label_44.setObjectName(u"label_44")
+
+        self.gridLayout_4.addWidget(self.label_44, 0, 0, 1, 2)
+
+        self.doubleSpinBox_next_cut = QDoubleSpinBox(self.groupBox_info)
+        self.doubleSpinBox_next_cut.setObjectName(u"doubleSpinBox_next_cut")
+        self.doubleSpinBox_next_cut.setEnabled(False)
+        self.doubleSpinBox_next_cut.setReadOnly(True)
+        self.doubleSpinBox_next_cut.setDecimals(3)
+
+        self.gridLayout_4.addWidget(self.doubleSpinBox_next_cut, 7, 2, 1, 2)
+
+        self.spinBox_current_y = QSpinBox(self.groupBox_info)
+        self.spinBox_current_y.setObjectName(u"spinBox_current_y")
+        self.spinBox_current_y.setEnabled(False)
+        self.spinBox_current_y.setReadOnly(True)
+
+        self.gridLayout_4.addWidget(self.spinBox_current_y, 1, 2, 1, 1)
+
+        self.label_46 = QLabel(self.groupBox_info)
+        self.label_46.setObjectName(u"label_46")
+
+        self.gridLayout_4.addWidget(self.label_46, 4, 0, 1, 2)
+
+        self.doubleSpinBox_previous_cut = QDoubleSpinBox(self.groupBox_info)
+        self.doubleSpinBox_previous_cut.setObjectName(u"doubleSpinBox_previous_cut")
+        self.doubleSpinBox_previous_cut.setEnabled(False)
+        self.doubleSpinBox_previous_cut.setReadOnly(True)
+        self.doubleSpinBox_previous_cut.setDecimals(3)
+
+        self.gridLayout_4.addWidget(self.doubleSpinBox_previous_cut, 5, 2, 1, 2)
+
+        self.spinBox_current_z = QSpinBox(self.groupBox_info)
+        self.spinBox_current_z.setObjectName(u"spinBox_current_z")
+        self.spinBox_current_z.setEnabled(False)
+        self.spinBox_current_z.setReadOnly(True)
+
+        self.gridLayout_4.addWidget(self.spinBox_current_z, 1, 3, 1, 1)
+
+
+        self.verticalLayout_5.addWidget(self.groupBox_info)
+
+        self.groupBox = QGroupBox(self.CameraTab)
+        self.groupBox.setObjectName(u"groupBox")
+        self.gridLayout_5 = QGridLayout(self.groupBox)
+        self.gridLayout_5.setObjectName(u"gridLayout_5")
+        self.label_48 = QLabel(self.groupBox)
+        self.label_48.setObjectName(u"label_48")
+
+        self.gridLayout_5.addWidget(self.label_48, 0, 0, 1, 1)
+
+        self.spinBox_no_slices = QSpinBox(self.groupBox)
+        self.spinBox_no_slices.setObjectName(u"spinBox_no_slices")
+        self.spinBox_no_slices.setValue(1)
+
+        self.gridLayout_5.addWidget(self.spinBox_no_slices, 0, 1, 1, 1)
+
+        self.checkBox_update_roi = QCheckBox(self.groupBox)
+        self.checkBox_update_roi.setObjectName(u"checkBox_update_roi")
+        self.checkBox_update_roi.setChecked(True)
+
+        self.gridLayout_5.addWidget(self.checkBox_update_roi, 1, 0, 1, 1)
+
+        self.checkBox_cut_last_slice = QCheckBox(self.groupBox)
+        self.checkBox_cut_last_slice.setObjectName(u"checkBox_cut_last_slice")
+        self.checkBox_cut_last_slice.setChecked(True)
+
+        self.gridLayout_5.addWidget(self.checkBox_cut_last_slice, 1, 1, 1, 1)
+
+        self.pushButton_camera_acquire = QPushButton(self.groupBox)
         self.pushButton_camera_acquire.setObjectName(u"pushButton_camera_acquire")
 
-        self.verticalLayout_5.addWidget(self.pushButton_camera_acquire)
+        self.gridLayout_5.addWidget(self.pushButton_camera_acquire, 2, 0, 1, 2)
+
+
+        self.verticalLayout_5.addWidget(self.groupBox)
 
         self.tabWidget.addTab(self.CameraTab, "")
         self.pliTab = QWidget()
@@ -669,7 +960,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 800, 33))
+        self.menubar.setGeometry(QRect(0, 0, 800, 21))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuHelp = QMenu(self.menubar)
@@ -693,6 +984,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuHelp.menuAction())
         self.menuSettings.addAction(self.actionShow_advanded_vibratome_parameters)
         self.menuSettings.addAction(self.actionSet_current_position_as_vibratome_position)
+        self.menuSettings.addAction(self.actionSet_current_z_as_focus_height)
         self.menuConfiguration.addAction(self.actionS_OCT_Serial_OCT)
         self.menuConfiguration.addAction(self.actionOCT_Optical_Coherence_Tomography)
         self.menuConfiguration.addAction(self.actionMUSE_Microscopy_by_UV_surface_excitation)
@@ -703,7 +995,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -725,6 +1017,7 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(tooltip)
         self.actionSet_current_position_as_vibratome_position.setToolTip(QCoreApplication.translate("MainWindow", u"This position will be used at the intial position for the cut", None))
 #endif // QT_CONFIG(tooltip)
+        self.actionSet_current_z_as_focus_height.setText(QCoreApplication.translate("MainWindow", u"Set current z as focus height", None))
         self.groupBox_stageXYZ.setTitle(QCoreApplication.translate("MainWindow", u"XYZ Stage", None))
         self.groupBox_stageXYZ_position.setTitle(QCoreApplication.translate("MainWindow", u"Position", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"X (mm)", None))
@@ -767,6 +1060,27 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.pushButton_stage_stop.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.StageTab), QCoreApplication.translate("MainWindow", u"Stage", None))
+        self.groupBox_data.setTitle(QCoreApplication.translate("MainWindow", u"Data Settings", None))
+        self.pushButton_directory.setText(QCoreApplication.translate("MainWindow", u"Choose Directory", None))
+        self.groupBox_mosaic.setTitle(QCoreApplication.translate("MainWindow", u"Mosaic Parameters", None))
+        self.label_36.setText(QCoreApplication.translate("MainWindow", u"X Min/Max (mm)", None))
+        self.label_37.setText(QCoreApplication.translate("MainWindow", u"Y Min/Max (mm)", None))
+        self.label_38.setText(QCoreApplication.translate("MainWindow", u"Z Min/Max (px)", None))
+        self.label_39.setText(QCoreApplication.translate("MainWindow", u"Tile size (um /pixel)", None))
+        self.label_40.setText(QCoreApplication.translate("MainWindow", u"Overlap Fraction", None))
+        self.label_41.setText(QCoreApplication.translate("MainWindow", u"Tile wait time (s)", None))
+        self.label_42.setText(QCoreApplication.translate("MainWindow", u"Mosaic Shape", None))
+        self.label_43.setText(QCoreApplication.translate("MainWindow", u"Mosaic Size (mm)", None))
+        self.pushButton_update_mosaic.setText(QCoreApplication.translate("MainWindow", u"Update Mosaic", None))
+        self.groupBox_info.setTitle(QCoreApplication.translate("MainWindow", u"Info", None))
+        self.label_47.setText(QCoreApplication.translate("MainWindow", u"Next Cut (mm)", None))
+        self.label_45.setText(QCoreApplication.translate("MainWindow", u"Focus Height (mm)", None))
+        self.label_44.setText(QCoreApplication.translate("MainWindow", u"Current tile ID (x,y,z)", None))
+        self.label_46.setText(QCoreApplication.translate("MainWindow", u"Previous Cut (mm)", None))
+        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Acquisition", None))
+        self.label_48.setText(QCoreApplication.translate("MainWindow", u"# Slices", None))
+        self.checkBox_update_roi.setText(QCoreApplication.translate("MainWindow", u"Update ROI", None))
+        self.checkBox_cut_last_slice.setText(QCoreApplication.translate("MainWindow", u"Cut last slice", None))
         self.pushButton_camera_acquire.setText(QCoreApplication.translate("MainWindow", u"Acquire", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.CameraTab), QCoreApplication.translate("MainWindow", u"Camera", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.pliTab), QCoreApplication.translate("MainWindow", u"PLI", None))
